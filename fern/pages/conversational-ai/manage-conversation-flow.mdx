@@ -1,0 +1,46 @@
+---
+title: Manage conversation flow
+subtitle: Control interruptions, silence detection, and turn-taking in your AI agent.
+---
+
+By default, the Conversational AI Engine manages turn-taking automatically. This page covers how to customize interruption handling and silence detection for your use case.
+
+## Interruption handling
+
+Interruption handling controls what happens when a user speaks while the agent is responding. By default, the agent stops speaking and processes the new input.
+
+To disable interruptions:
+
+```json title="Agent config"
+{
+  "agent": {
+    "asr": {
+      "interrupt_duration_ms": 0
+    }
+  }
+}
+```
+
+## Silence detection
+
+The engine ends the agent's turn when silence is detected. You can adjust the silence threshold:
+
+```json title="Agent config"
+{
+  "agent": {
+    "asr": {
+      "silence_duration_ms": 600
+    }
+  }
+}
+```
+
+<Callout intent="info">
+  Lower values make the agent more responsive but may cause it to cut off users mid-sentence. 400–600ms works well for most conversational use cases.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card title="Quickstart" href="/conversational-ai/quickstart" />
+</Cards>

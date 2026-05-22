@@ -1,0 +1,47 @@
+---
+title: Quickstart
+subtitle: Build AI-powered voice agents that hold real-time conversations.
+---
+
+This guide walks you through creating your first Conversational AI agent using the Agora Conversational AI Engine.
+
+## Prerequisites
+
+- An Agora account and app ID from [Agora Console](https://console.agora.io)
+- An LLM provider API key (OpenAI, Cohere, or compatible)
+
+## How it works
+
+The Conversational AI Engine connects a real-time voice channel to an LLM pipeline. The engine handles speech-to-text, LLM inference, and text-to-speech automatically, so you interact with it via a REST API.
+
+## Start an agent
+
+```bash title="Start agent"
+curl -X POST https://api.agora.io/api/conversational-ai/v2/projects/<YOUR_APP_ID>/agents/start \
+  -H "Authorization: Basic <YOUR_CREDENTIALS>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "channel": "test-channel",
+    "agent": {
+      "llm": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "api_key": "<YOUR_OPENAI_KEY>",
+        "model": "gpt-4o-mini",
+        "system_message": "You are a helpful assistant."
+      }
+    }
+  }'
+```
+
+## Stop an agent
+
+```bash title="Stop agent"
+curl -X POST https://api.agora.io/api/conversational-ai/v2/projects/<YOUR_APP_ID>/agents/<AGENT_ID>/stop \
+  -H "Authorization: Basic <YOUR_CREDENTIALS>"
+```
+
+## Next steps
+
+<Cards>
+  <Card title="Manage conversation flow" href="/conversational-ai/manage-conversation-flow" />
+</Cards>

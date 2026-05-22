@@ -1,0 +1,9 @@
+navigation:
+  - section: Get started
+    contents:
+      - page: Quickstart
+        path: ../pages/video-calling/quickstart.mdx
+  - section: Security
+    contents:
+      - page: Encrypt media streams
+        path: ../pages/video-calling/encrypt-media-stream.mdx

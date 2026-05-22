@@ -1,0 +1,78 @@
+---
+title: Encrypt media streams
+subtitle: Enable AES encryption for audio and video streams in your Flutter app.
+---
+
+Media stream encryption ensures that only authorized users in a channel can access the audio and video content. This page shows how to enable built-in encryption using the Agora Flutter SDK.
+
+<Callout intent="warning">
+  Do not enable encryption when using the media push and raw audio capture features.
+</Callout>
+
+
+
+## Understand the tech
+
+When you enable encryption, the SDK encrypts all audio and video data before transmission. Both ends of the channel must use the same encryption key and mode for decryption to succeed.
+
+Agora supports the following encryption modes:
+
+| Mode | Enum value |
+|---|---|
+| AES-128-GCM | `EncryptionMode.aes128Gcm2` |
+| AES-256-GCM | `EncryptionMode.aes256Gcm2` |
+| AES-128-XTS | `EncryptionMode.aes128Xts` |
+
+## Prerequisites
+
+- Agora Flutter SDK 6.x or later
+- A 32-byte encryption key
+- An optional 32-byte salt, base64-encoded
+
+## Enable encryption
+
+Call `enableEncryption` before joining the channel and pass an `EncryptionConfig` object with your chosen mode and key.
+
+```dart title="Enable encryption"
+final salt = base64Decode('<YOUR_BASE64_SALT>');
+
+await engine.enableEncryption(
+  enabled: true,
+  config: EncryptionConfig(
+    encryptionMode: EncryptionMode.aes256Gcm2,
+    encryptionKey: '<YOUR_32_BYTE_KEY>',
+    encryptionKdfSalt: salt,
+  ),
+);
+```
+
+<Callout intent="info">
+  The `encryptionKdfSalt` parameter expects a `Uint8List`. Use `base64Decode()` from `dart:convert` to convert your base64 salt string before passing it.
+</Callout>
+
+## Handle errors
+
+Wrap `enableEncryption` in a try-catch block to handle configuration errors.
+
+```dart title="Error handling"
+try {
+  await engine.enableEncryption(
+    enabled: true,
+    config: EncryptionConfig(
+      encryptionMode: EncryptionMode.aes256Gcm2,
+      encryptionKey: '<YOUR_32_BYTE_KEY>',
+      encryptionKdfSalt: salt,
+    ),
+  );
+} on AgoraRtcException catch (e) {
+  print('Encryption error: ${e.code} - ${e.message}');
+}
+```
+
+## Disable encryption
+
+To disable encryption, call `enableEncryption` with `enabled` set to `false`.
+
+```dart
+await engine.enableEncryption(enabled: false, config: EncryptionConfig());
+```

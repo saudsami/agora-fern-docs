@@ -1,0 +1,84 @@
+---
+title: Quickstart
+subtitle: Add real-time voice and video to your app in minutes.
+---
+
+Agora's SDK lets you integrate real-time audio and video into your application with a few lines of code. This guide walks you through the minimum setup needed to join a channel and start streaming.
+
+## Prerequisites
+
+<Markdown src="/snippets/prerequisites.mdx" />
+
+## Install the SDK
+
+<CodeBlocks>
+  <CodeBlock language="dart" title="Flutter">
+```dart
+  dependencies:
+    agora_rtc_engine: ^6.3.0
+```
+  </CodeBlock>
+  <CodeBlock language="js" title="Web">
+```js
+  npm install agora-rtc-sdk-ng
+```
+  </CodeBlock>
+  <CodeBlock language="kotlin" title="Android">
+```kotlin
+  implementation 'io.agora.rtc:full-sdk:4.3.0'
+```
+  </CodeBlock>
+</CodeBlocks>
+
+## Initialize the engine
+
+<CodeBlocks>
+  <CodeBlock language="dart" title="Flutter">
+```dart
+  final engine = createAgoraRtcEngine();
+  await engine.initialize(RtcEngineContext(appId: '<YOUR_APP_ID>'));
+```
+  </CodeBlock>
+  <CodeBlock language="js" title="Web">
+```js
+  const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+```
+  </CodeBlock>
+  <CodeBlock language="kotlin" title="Android">
+```kotlin
+  val engine = RtcEngine.create(context, "<YOUR_APP_ID>", rtcEventHandler)
+```
+  </CodeBlock>
+</CodeBlocks>
+
+## Join a channel
+
+<CodeBlocks>
+  <CodeBlock language="dart" title="Flutter">
+```dart
+  await engine.joinChannel(
+    token: '<YOUR_TOKEN>',
+    channelId: 'test-channel',
+    uid: 0,
+    options: const ChannelMediaOptions(),
+  );
+```
+  </CodeBlock>
+  <CodeBlock language="js" title="Web">
+```js
+  await client.join('<YOUR_APP_ID>', 'test-channel', '<YOUR_TOKEN>', null);
+```
+  </CodeBlock>
+  <CodeBlock language="kotlin" title="Android">
+```kotlin
+  engine.joinChannel("<YOUR_TOKEN>", "test-channel", null, 0)
+```
+  </CodeBlock>
+</CodeBlocks>
+
+## Next steps
+
+<Cards>
+  <Card title="Encrypt media streams" href="/encrypt-media-stream/flutter" />
+  <Card title="Speech-to-text migration" href="/migration/stt-5x-to-7x" />
+</Cards>

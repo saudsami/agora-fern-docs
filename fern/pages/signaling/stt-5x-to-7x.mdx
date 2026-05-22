@@ -1,0 +1,79 @@
+---
+title: Migrate Speech-to-Text from 5.x to 7.x
+subtitle: Update your STT integration to use the revised status fields and error handling introduced in version 7.x.
+---
+
+Version 7.x of the Real-Time Speech-to-Text API introduces breaking changes to the task status model and error reporting. This page covers what changed and how to update your integration.
+
+<Callout intent="warning">
+  The `error` status value and `errorData.message` field are deprecated in 7.x. Update your code before migrating to avoid silent failures.
+</Callout>
+
+## What changed
+
+| Area | 5.x | 7.x |
+|---|---|---|
+| Task failed status | `"error"` | `"failed"` |
+| Error detail field | `errorData.message` | `errorData.reason` |
+| Status field location | `taskStatus.status` | `status` (top-level) |
+
+## Update status handling
+
+In 5.x, you checked for task failure using the `"error"` status string. In 7.x, this value is renamed to `"failed"`.
+
+<CodeBlocks>
+  <CodeBlock language="js" title="5.x">
+```js
+  if (taskStatus.status === 'error') {
+    console.error('STT task failed:', taskStatus.errorData.message);
+  }
+```
+  </CodeBlock>
+  <CodeBlock language="js" title="7.x">
+```js
+  if (status === 'failed') {
+    console.error('STT task failed:', errorData.reason);
+  }
+```
+  </CodeBlock>
+</CodeBlocks>
+
+## Update webhook handling
+
+If you consume task status updates via webhook, update your handler to use the top-level `status` field and the new `errorData.reason` field.
+
+```js title="7.x webhook handler"
+app.post('/webhook', (req, res) => {
+  const { status, errorData } = req.body;
+
+  switch (status) {
+    case 'in_progress':
+      console.log('Task running');
+      break;
+    case 'failed':
+      console.error('Task failed:', errorData?.reason);
+      break;
+    case 'completed':
+      console.log('Task completed');
+      break;
+  }
+
+  res.sendStatus(200);
+});
+```
+
+## Migration checklist
+
+<Steps>
+  ### Replace status string checks
+  Find all references to `=== 'error'` and replace with `=== 'failed'`.
+
+  ### Replace error field references
+  Find all references to `errorData.message` and replace with `errorData.reason`.
+
+  ### Update status field path
+  Replace `taskStatus.status` with the top-level `status` field in all webhook and polling handlers.
+
+  ### Test with a live task
+  Trigger a task in your staging environment and verify status transitions are handled correctly.
+</Steps>

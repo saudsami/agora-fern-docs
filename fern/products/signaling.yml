@@ -1,0 +1,9 @@
+navigation:
+  - section: Get started
+    contents:
+      - page: Quickstart
+        path: ../pages/signaling/quickstart.mdx
+  - section: Migration guides
+    contents:
+      - page: Migrate STT 5.x to 7.x
+        path: ../pages/signaling/stt-5x-to-7x.mdx

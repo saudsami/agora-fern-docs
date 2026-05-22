@@ -1,0 +1,49 @@
+---
+title: Quickstart
+subtitle: Add real-time messaging and presence to your app.
+---
+
+This guide walks you through sending your first message using the Agora Signaling SDK.
+
+## Prerequisites
+
+<Markdown src="/snippets/prerequisites.mdx" />
+
+## Install the SDK
+
+<CodeBlocks>
+  <CodeBlock language="js" title="Web">
+```js
+  npm install agora-rtm-sdk
+```
+  </CodeBlock>
+  <CodeBlock language="kotlin" title="Android">
+```kotlin
+  implementation 'io.agora.rtm:rtm-sdk:2.2.0'
+```
+  </CodeBlock>
+</CodeBlocks>
+
+## Initialize and log in
+
+<CodeBlocks>
+  <CodeBlock language="js" title="Web">
+```js
+  const signalingEngine = new AgoraRTM.RTM('<YOUR_APP_ID>', '<YOUR_USER_ID>');
+  await signalingEngine.login({ token: '<YOUR_TOKEN>' });
+```
+  </CodeBlock>
+  <CodeBlock language="kotlin" title="Android">
+```kotlin
+  val config = RtmConfig.Builder("<YOUR_APP_ID>", "<YOUR_USER_ID>").build()
+  val signalingEngine = RtmClient.create(config)
+  signalingEngine.login("<YOUR_TOKEN>")
+```
+  </CodeBlock>
+</CodeBlocks>
+
+## Next steps
+
+<Cards>
+  <Card title="Migrate STT 5.x to 7.x" href="/signaling/stt-5x-to-7x" />
+</Cards>

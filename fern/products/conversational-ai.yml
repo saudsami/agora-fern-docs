@@ -1,0 +1,9 @@
+navigation:
+  - section: Get started
+    contents:
+      - page: Quickstart
+        path: ../pages/conversational-ai/quickstart.mdx
+  - section: Guides
+    contents:
+      - page: Manage conversation flow
+        path: ../pages/conversational-ai/manage-conversation-flow.mdx

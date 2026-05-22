@@ -1,0 +1,19 @@
+instances:
+  - url: https://agora-ss.docs.buildwithfern.com
+
+title: Agora | Documentation
+
+products:
+  - display-name: Video Calling
+    path: products/video-calling.yml
+    icon: video
+  - display-name: Signaling
+    path: products/signaling.yml
+    icon: bell
+  - display-name: Conversational AI
+    path: products/conversational-ai.yml
+    icon: microphone
+
+experimental:
+  mdx-components:
+    - ./components
