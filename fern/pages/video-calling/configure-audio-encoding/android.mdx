@@ -1,0 +1,52 @@
+---
+title: Configure audio encoding
+subtitle: Set audio encoding properties and application scenarios in your Android app.
+---
+
+<Markdown src="/shared/video-calling/configure-audio-encoding/intro.mdx" />
+
+## Implementation
+
+| API | Description |
+|:---|:---|
+| `create(config.mAudioScenario)` | Set the audio scenario while creating an `RtcEngine` instance. |
+| `setAudioProfile(profile)` | Set audio encoding properties before or after joining a channel. |
+| `setAudioScenario` | Set an application scenario before or after joining a channel. |
+
+### 1-on-1 interactive teaching
+
+<CodeBlocks>
+  <CodeBlock language="java" title="Java">
+```java
+  config.mAudioScenario = Constants.AudioScenario.getValue(Constants.AudioScenario.DEFAULT);
+  engine = RtcEngine.create(config);
+  RtcEngine.setAudioProfile(Constants.AUDIO_PROFILE_DEFAULT);
+```
+  </CodeBlock>
+  <CodeBlock language="kotlin" title="Kotlin">
+```kotlin
+  config.mAudioScenario = Constants.AudioScenario.getValue(Constants.AudioScenario.DEFAULT)
+  engine = RtcEngine.create(config)
+  RtcEngine.setAudioProfile(Constants.AUDIO_PROFILE_DEFAULT)
+```
+  </CodeBlock>
+</CodeBlocks>
+
+### KTV
+
+<CodeBlocks>
+  <CodeBlock language="java" title="Java">
+```java
+  config.mAudioScenario = Constants.AudioScenario.getValue(Constants.AudioScenario.GAME_STREAMING);
+  engine = RtcEngine.create(config);
+  RtcEngine.setAudioProfile(Constants.AUDIO_PROFILE_MUSIC_HIGH_QUALITY);
+```
+  </CodeBlock>
+  <CodeBlock language="kotlin" title="Kotlin">
+```kotlin
+  config.mAudioScenario = Constants.AudioScenario.getValue(Constants.AudioScenario.GAME_STREAMING)
+  engine = RtcEngine.create(config)
+  RtcEngine.setAudioProfile(Constants.AUDIO_PROFILE_MUSIC_HIGH_QUALITY)
+```
+  </CodeBlock>
+</CodeBlocks>

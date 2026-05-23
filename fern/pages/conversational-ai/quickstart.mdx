@@ -17,20 +17,49 @@ The Conversational AI Engine connects a real-time voice channel to an LLM pipeli
 ## Start an agent
 
 ```bash title="Start agent"
-curl -X POST https://api.agora.io/api/conversational-ai/v2/projects/<YOUR_APP_ID>/agents/start \
-  -H "Authorization: Basic <YOUR_CREDENTIALS>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "channel": "test-channel",
-    "agent": {
-      "llm": {
-        "url": "https://api.openai.com/v1/chat/completions",
-        "api_key": "<YOUR_OPENAI_KEY>",
-        "model": "gpt-4o-mini",
-        "system_message": "You are a helpful assistant."
+curl --request POST \
+  --url https://api.agora.io/api/conversational-ai-agent/v2/projects/:appid/join \
+  --header 'Authorization: Basic <your_base64_encoded_credentials>' \
+  --header 'Content-Type: application/json' \
+  --data '
+{
+  "name": "unique_name",
+  "properties": {
+    "channel": "<your_channel_name>",
+    "token": "<your_rtc_token>",
+    "agent_rtc_uid": "0",
+    "remote_rtc_uids": ["1002"],
+    "enable_string_uid": false,
+    "idle_timeout": 120,
+    "llm": {
+      "url": "https://api.openai.com/v1/chat/completions",
+      "api_key": "<your_llm_api_key>",
+      "system_messages": [
+        {
+          "role": "system",
+          "content": "You are a helpful chatbot."
+        }
+      ],
+      "greeting_message": "Hello, how can I help you?",
+      "failure_message": "Sorry, I don't know how to answer this question.",
+      "max_history": 10,
+      "params": {
+        "model": "gpt-4o-mini"
+      }
+    },
+    "asr": {
+      "language": "en-US"
+    },
+    "tts": {
+      "vendor": "microsoft",
+      "params": {
+          "key": "<your_tts_api_key>",
+          "region": "eastus",
+          "voice_name": "en-US-AndrewMultilingualNeural"
       }
     }
-  }'
+  }
+}'
 ```
 
 ## Stop an agent

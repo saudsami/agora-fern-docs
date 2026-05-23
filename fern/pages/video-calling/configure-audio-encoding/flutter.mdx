@@ -1,0 +1,34 @@
+---
+title: Configure audio encoding
+subtitle: Set audio encoding properties and application scenarios in your Flutter app.
+---
+
+<Markdown src="/shared/video-calling/configure-audio-encoding/intro.mdx" />
+
+## Implementation
+
+| API | Description |
+|:---|:---|
+| `initialize(context.audioScenario)` | Set the audio scenario while initializing an `RtcEngine` instance. |
+| `setAudioProfile(profile, scenario)` | Set audio encoding properties before or after joining a channel. |
+| `setAudioScenario(scenario)` | Set an application scenario before or after joining a channel. |
+
+### 1-on-1 interactive teaching
+
+```dart
+context.audioScenario = AudioScenarioType.audioScenarioDefault;
+await rtcEngine.initialize(context);
+await rtcEngine.setAudioProfile(AudioProfileType.audioProfileDefault);
+```
+
+### KTV
+
+```dart
+context.audioScenario = AudioScenarioType.audioScenarioGameStreaming;
+await rtcEngine.initialize(context);
+await rtcEngine.setAudioProfile(AudioProfileType.audioScenarioGameStreaming);
+```
+
+<Callout intent="info">
+  Due to iOS system limitations, some audio routes cannot be recognized in call volume mode. Set the audio scenario to `audioScenarioGameStreaming(3)` if you need to use an external sound card.
+</Callout>
