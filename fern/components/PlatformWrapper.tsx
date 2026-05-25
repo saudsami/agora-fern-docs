@@ -2,32 +2,49 @@
 
 import { useEffect, useState } from "react";
 
+const KNOWN_PLATFORMS = [
+  "android", "flutter", "ios", "web",
+  "macos", "windows", "unity", "electron",
+  "react-native", "react-js"
+];
+
+type PlatformProp = string | string[];
+
 interface PlatformWrapperProps {
-  platform?: string[];
-  notAllowed?: string[];
+  platform?: PlatformProp;
+  notAllowed?: PlatformProp;
   children: React.ReactNode;
-  [key: string]: unknown;
 }
 
+const toArray = (val: PlatformProp | undefined): string[] => {
+  if (!val) return [];
+  return Array.isArray(val) ? val : [val];
+};
+
 export const PlatformWrapper = ({
-  platform = [],
-  notAllowed = [],
+  platform,
+  notAllowed,
   children,
-  ...props
 }: PlatformWrapperProps) => {
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
+  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>(undefined);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("selectedPlatform") ?? "";
-    setSelectedPlatform(stored);
+    const segments = window.location.pathname.split("/").filter(Boolean);
+    const match = segments.find(seg =>
+      KNOWN_PLATFORMS.includes(seg.toLowerCase())
+    );
+    setSelectedPlatform(match ?? "");
     setMounted(true);
   }, []);
 
   if (!mounted) return null;
 
-  if (platform.length && !platform.includes(selectedPlatform)) return null;
-  if (notAllowed.includes(selectedPlatform)) return null;
+  const platformList = toArray(platform);
+  const notAllowedList = toArray(notAllowed);
 
-  return <div {...props}>{children}</div>;
+  if (platformList.length && !platformList.includes(selectedPlatform ?? "")) return null;
+  if (notAllowedList.includes(selectedPlatform ?? "")) return null;
+
+  return <>{children}</>;
 };

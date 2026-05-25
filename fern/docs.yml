@@ -3,17 +3,42 @@ instances:
 
 title: Agora | Documentation
 
-products:
-  - display-name: Video Calling
-    path: products/video-calling.yml
-    icon: video
-  - display-name: Signaling
-    path: products/signaling.yml
-    icon: bell
-  - display-name: Conversational AI
-    path: products/conversational-ai.yml
-    icon: microphone
+logo:
+  light: ./assets/agora.png
+  dark: ./assets/agora.png
+  height: 40
 
 experimental:
   mdx-components:
     - ./components
+
+products:
+  - display-name: Video Calling
+    icon: video
+    path: ./products/video-calling-android.yml
+    versions:
+      - display-name: Android
+        path: ./products/video-calling-android.yml
+        slug: android
+      - display-name: Flutter
+        path: ./products/video-calling-flutter.yml
+  - display-name: Signaling
+    path: ./products/signaling.yml
+    icon: bell
+  - display-name: Conversational AI
+    path: ./products/conversational-ai.yml
+    icon: microphone
+
+navbar-links:
+  - type: secondary
+    text: Build with AI
+    url: https://docs.agora.io
+  - type: secondary
+    text: API Reference
+    url: https://docs.agora.io
+  - type: secondary
+    text: SDKs
+    url: https://docs.agora.io
+  - type: primary
+    text: Console
+    url: https://console.agora.io

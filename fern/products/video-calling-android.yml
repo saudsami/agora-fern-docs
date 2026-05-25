@@ -7,13 +7,7 @@ navigation:
   - section: Enhance call quality
     contents:
       - page: Configure audio encoding
-        path: ../pages/video-calling/configure-audio-encoding/index.mdx
-      - page: Android
         path: ../pages/video-calling/configure-audio-encoding/android.mdx
-        hidden: false
-      - page: Flutter
-        path: ../pages/video-calling/configure-audio-encoding/flutter.mdx
-        hidden: false
 
   - section: Security
     contents:
