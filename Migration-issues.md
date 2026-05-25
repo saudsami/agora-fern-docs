@@ -13,6 +13,16 @@ Fern has no native equivalent. We explored the following approaches:
 - Custom dropdown component with pages/sections marked `hidden: true` in `docs.yml`: correctly hide on initial load but reappear in the sidebar after the user navigates to them, making the sidebar unpredictable. Wrapping hidden pages inside a hidden section does not resolve the issue.
 - Global platform selector in the header — Fern supports replacing the default header with a custom React component, but provides no starter component. The entire header (logo, search, product switcher, version dropdown, theme toggle) would need to be rebuilt from scratch. Additionally, custom header components do not work in local development, only in preview and production, making iteration painful.
 
+### Variable substitution in "View as Markdown"
+
+Agora's documentation uses three types of variables: global (Vg), product-specific (Vpd), and platform-specific (Vpl). In Docusaurus, these are resolved at render time and appear correctly in all views of the page content.
+In Fern, global variables can be migrated to built-in ${ENV_VAR} build-time substitution, which resolves correctly in "View as Markdown" and llms.txt. However, product and platform variables are implemented as client-side React components that read from the URL at runtime. Since "View as Markdown" reads the raw MDX source rather than the rendered output, these variables appear as unresolved component tags (e.g. <Vpd k="SDK" />) instead of their actual values. This also affects llms.txt and any AI tool that consumes the raw markdown.
+There is no workaround for Vpd and Vpl within Fern's current architecture — their values are inherently context-dependent and cannot be determined at build time. The only mitigation would be to hardcode platform and product names in shared content rather than using variables, which significantly increases maintenance overhead at Agora's scale.
+
+### ProductWrapper and PlatformWrapper content filtering not reflected in exported markdown
+ProductWrapper and PlatformWrapper filter page content at runtime based on the current URL. The "View as Markdown", llms.txt, and any AI tool consuming the raw MDX source will see the unfiltered content — all platform-specific sections rendered simultaneously regardless of platform or notAllowed props. This means a page with Android, Flutter, iOS, and Web implementations wrapped in PlatformWrapper blocks will export all four implementations in the markdown, producing redundant and potentially contradictory content for AI consumers.
+This is the same root cause as the variable substitution issue — Fern has no build-time awareness of platform or product context. A proper solution would require Fern to support per-version markdown export, generating a separate markdown output for each platform version rather than a single unfiltered document. 
+
 ## Limitations
 
 ### Lack of component swizzling

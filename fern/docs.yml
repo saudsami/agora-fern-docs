@@ -2,6 +2,7 @@ instances:
   - url: https://agora-ss.docs.buildwithfern.com
 
 title: Agora | Documentation
+favicon: ./assets/favicon.ico
 
 logo:
   light: ./assets/agora.png
