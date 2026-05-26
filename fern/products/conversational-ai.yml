@@ -1,10 +1,18 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fern-api/fern/main/product-yml.schema.json
 navigation:
+  - section: Overview
+    collapsed: true
+    contents:
+      - page: Product overview
+        path: ../pages/conversational-ai/product-overview.mdx
+      - page: Release notes 
+        path: ../pages/conversational-ai/release-notes.mdx
+      - page: Pricing
+        path: ../pages/conversational-ai/pricing.mdx
   - section: Get started
+    collapsed: true
     contents:
-      - page: Quickstart
+      - page: Voice AI quickstart
         path: ../pages/conversational-ai/quickstart.mdx
-  - section: Guides
-    contents:
-      - page: Manage conversation flow
-        path: ../pages/conversational-ai/manage-conversation-flow.mdx
+        slug: quickstart
+                

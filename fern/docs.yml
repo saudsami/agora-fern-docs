@@ -12,9 +12,10 @@ logo:
 #layout:
 #  switcher-placement: sidebar
 
-experimental:
-  mdx-components:
-    - ./components
+landing-page:
+  page: Welcome
+  path: ./pages/welcome.mdx
+  
 
 products:
   - display-name: Video Calling
@@ -49,3 +50,7 @@ navbar-links:
   - type: primary
     text: Console
     url: https://console.agora.io
+
+experimental:
+  mdx-components:
+    - ./components    
