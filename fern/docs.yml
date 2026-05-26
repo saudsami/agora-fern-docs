@@ -9,12 +9,16 @@ logo:
   dark: ./assets/agora.png
   height: 40
 
+#layout:
+#  switcher-placement: sidebar
+
 experimental:
   mdx-components:
     - ./components
 
 products:
   - display-name: Video Calling
+    slug: video-calling
     icon: video
     path: ./products/video-calling-android.yml
     versions:
@@ -24,9 +28,11 @@ products:
       - display-name: Flutter
         path: ./products/video-calling-flutter.yml
   - display-name: Signaling
+    slug: signaling
     path: ./products/signaling.yml
     icon: bell
   - display-name: Conversational AI
+    slug: conversational-ai
     path: ./products/conversational-ai.yml
     icon: microphone
 

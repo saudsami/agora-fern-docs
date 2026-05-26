@@ -5,6 +5,16 @@ Before you begin, make sure you have:
 - An Agora account and an active project in [Agora Console](https://console.agora.io)
 - An app ID from your Agora project
 - A temporary token generated from Agora Console
+<If products={["video-calling"]}>
+- A camera and a microphone (IF)
+</If>
+<If products={["signal"]}>
+- A signal (IF)
+</If>
+
 <ProductWrapper product={["video-calling"]}>
-- A camera and a microphone
+- product is video calling ProductWrapper
+</ProductWrapper>
+<ProductWrapper product={["signaling"]}>
+- product is signaling ProductWrapper
 </ProductWrapper>
