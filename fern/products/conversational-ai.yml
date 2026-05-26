@@ -15,4 +15,10 @@ navigation:
       - page: Voice AI quickstart
         path: ../pages/conversational-ai/quickstart.mdx
         slug: quickstart
+  - section: Develop
+    collapsed: true 
+    contents:
+      - page: Start and stop an agent
+        path: ../pages/conversational-ai/start-stop-agent.mdx
+             
                 
