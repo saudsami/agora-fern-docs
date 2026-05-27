@@ -20,5 +20,7 @@ navigation:
     contents:
       - page: Start and stop an agent
         path: ../pages/conversational-ai/start-stop-agent.mdx
+      - page: Build a backend and client from scratch
+        path: ../pages/conversational-ai/build-server-client.mdx  
              
                 

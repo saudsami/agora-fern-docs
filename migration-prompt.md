@@ -64,3 +64,15 @@ Make the following changes when migrating a docusaurus doc to fern:
   </CodeBlocks>
   ```
 
+- Image paths: Modify image paths from ![](/images/path-to/image.png) to  ![](/assets/path-to/image.png)
+
+
+- Codeblock titles: When migrating simple codeblocks, add a suitable title where it adds value. This is nice to have, not a strict requirement.
+
+  ```json title="200 OK"
+  {
+    "agent_id": "1NT29X10YHxxxxxWJOXLYHNYB",
+    "create_ts": 1737111452,
+    "status": "RUNNING"
+  }
+  ```
