@@ -18,6 +18,10 @@ landing-page:
   
 
 products:
+  - display-name: Conversational AI
+    slug: conversational-ai
+    path: ./products/conversational-ai.yml
+    icon: microphone
   - display-name: Video Calling
     slug: video-calling
     icon: video
@@ -32,10 +36,6 @@ products:
     slug: signaling
     path: ./products/signaling.yml
     icon: bell
-  - display-name: Conversational AI
-    slug: conversational-ai
-    path: ./products/conversational-ai.yml
-    icon: microphone
 
 navbar-links:
   - type: secondary

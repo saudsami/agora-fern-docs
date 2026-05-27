@@ -24,9 +24,9 @@ This project uses Agora-managed presets, so no vendor API keys are required to c
 A complete client-server app:
 
 - **Backend**: Three HTTP endpoints:
-  - <Badge intent="success">POST</Badge>`/api/token`: Issues RTC + RTM tokens for a given channel and UID
-  - `POST /api/invite-agent`: Starts the agent using the Agent Server SDK
-  - `POST /api/stop-conversation`: Stops the agent by ID
+  - <Badge intent="success">POST</Badge> `/api/token`: Issues RTC + RTM tokens for a given channel and UID
+  - <Badge intent="success">POST</Badge> `/api/invite-agent`: Starts the agent using the Agent Server SDK
+  - <Badge intent="success">POST</Badge> `/api/stop-conversation`: Stops the agent by ID
 
 - **Frontend**: A Next.js page that:
   - Requests microphone permission
@@ -194,7 +194,7 @@ The backend exposes three endpoints, one for each operation the frontend needs.
 
 ### Generate tokens
 
-Endpoint: `POST /api/token`
+Endpoint: <Badge intent="success">POST</Badge> `/api/token`
 
 This endpoint builds an RTC token and an RTM token for the browser client. It is the only place the App Certificate is used.
 
@@ -227,7 +227,7 @@ export async function POST(req: NextRequest) {
 
 ### Start an agent session
 
-Endpoint: `POST /api/invite-agent`
+Endpoint: <Badge intent="success">POST</Badge> `/api/invite-agent`
 
 This endpoint uses the Agent Server SDK to configure an agent and start a session. The STT, LLM, and TTS configurations use Agora-managed presets and therefore do not require an `apiKey`.
 
@@ -284,7 +284,7 @@ export async function POST(req: NextRequest) {
 
 ### Stop an agent session
 
-Endpoint: `POST /api/stop-conversation`
+Endpoint: <Badge intent="success">POST</Badge> `/api/stop-conversation`
 
 This endpoint stops a running agent session by ID.
 
@@ -321,7 +321,7 @@ All backend code lives in `server-python/main.py`.
 
 ### Generate tokens
 
-Endpoint: `POST /api/token`
+Endpoint: <Badge intent="success">POST</Badge> `/api/token`
 
 This endpoint generates an RTC token and an RTM token for the browser client. It is the only place the App Certificate is used.
 
@@ -367,7 +367,7 @@ def token(body: TokenRequest):
 
 ### Start an agent session
 
-Endpoint: `POST /api/invite-agent`
+Endpoint: <Badge intent="success">POST</Badge> `/api/invite-agent`
 
 This endpoint uses the Agent Server SDK to configure an agent and start a session in the
 caller's channel. The STT, LLM, and TTS configurations use Agora-managed presets and
@@ -425,7 +425,7 @@ def invite_agent(body: InviteRequest):
 
 ### Stop an agent session
 
-Endpoint: `POST /api/stop-conversation`
+Endpoint: <Badge intent="success">POST</Badge> `/api/stop-conversation`
 
 This endpoint stops a running agent session by ID.
 
