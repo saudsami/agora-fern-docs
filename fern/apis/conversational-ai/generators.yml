@@ -1,0 +1,3 @@
+api:
+  specs:
+    - openapi: "./conversational-ai-api-v2.x.yaml"

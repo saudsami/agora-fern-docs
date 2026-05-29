@@ -22,10 +22,8 @@ navigation:
         path: ../pages/conversational-ai/start-stop-agent.mdx
       - page: Build a backend and client from scratch
         path: ../pages/conversational-ai/build-server-client.mdx  
-  - section: RESTful API
-    collapsed: true
-    contents:
-      - page: Start a conversational AI agent
-        path: ../pages/conversational-ai/rest-api/join.mdx
+  - api: RESTful API
+    slug: rest-api
+    api-name: conversational-ai
              
                 

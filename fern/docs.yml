@@ -16,7 +16,6 @@ landing-page:
   page: Welcome
   path: ./pages/welcome.mdx
   
-
 products:
   - display-name: Conversational AI
     slug: conversational-ai
@@ -50,6 +49,8 @@ navbar-links:
   - type: primary
     text: Console
     url: https://console.agora.io
+
+css: styles.css
 
 experimental:
   mdx-components:

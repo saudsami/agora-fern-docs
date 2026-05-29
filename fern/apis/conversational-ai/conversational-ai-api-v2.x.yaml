@@ -1,0 +1,3147 @@
+openapi: 3.0.3
+info:
+  version: '2.5'
+  title: Agora Conversational AI API
+  description: |-
+    This document describes the RESTful API for Agora Conversational AI.
+
+    ## Data Format
+
+    All HTTP request headers have a Content-Type of `application/json`. All request and response content is in JSON format.
+
+servers:
+  - url: https://api.agora.io/api/conversational-ai-agent
+    description: Production API server
+
+paths:
+  /v2/projects/{appid}/join:
+    post:
+      tags:
+        - Agent Management
+      summary: Start a conversational AI agent
+      description: Create and start a Conversational AI agent instance.
+      operationId: start-agent
+      parameters:
+        - $ref: '#/components/parameters/appid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - properties
+              properties:
+                name:
+                  type: string
+                  description: The unique identifier of the agent. The same identifier cannot be used repeatedly.
+                preset:
+                  type: string
+                  description: |-
+                    A comma-separated string of one or more presets. Each preset provides a predefined configuration for ASR, LLM, and TTS. You can specify a preset for any or all of ASR, LLM, and TTS. When a preset is specified, you do not need to provide the endpoint URL, API key, or model for the preset providers. Use the `asr`, `llm`, and `tts` fields to configure additional settings.
+
+                    Available presets:
+                    - ASR: `deepgram_nova_2`, `deepgram_nova_3`
+                    - LLM: `openai_gpt_4o_mini`, `openai_gpt_4_1_mini`, `openai_gpt_5_nano`, `openai_gpt_5_mini`
+                    - TTS: `minimax_speech_2_6_turbo`, `minimax_speech_2_8_turbo`, `openai_tts_1`
+                pipeline_id:
+                  type: string
+                  description: The unique ID of a published agent in AI Studio. When provided, the saved agent configuration is used as the base configuration. Any fields specified in `properties` override the corresponding agent settings. When you specify a `pipeline_id`, the `asr`, `tts`, and `llm` fields in `properties` are optional.
+                properties:
+                  type: object
+                  description: Configuration details of the agent.
+                  required:
+                    - channel
+                    - token
+                    - agent_rtc_uid
+                    - remote_rtc_uids
+                  properties:
+                    channel:
+                      type: string
+                      description: The name of the channel to join.
+                    token:
+                      type: string
+                      description: The authentication token used by the agent to join the channel.
+                    agent_rtc_uid:
+                      type: string
+                      description: The user ID of the agent in the channel. All UIDs within an RTC channel must be unique. Ensure no other user or service bot is using this UID. A value of `0` means that a unique random UID is generated and assigned. Set the `token` accordingly.
+                    remote_rtc_uids:
+                      type: array
+                      description: A list of user IDs that the agent subscribes to in the channel. Only subscribed users can interact with the agent. Currently, only one user ID is supported.
+                      items:
+                        type: string
+                    enable_string_uid:
+                      type: boolean
+                      default: false
+                      description: |-
+                        Whether to enable String uid:
+                        - `true`: Both agent and subscriber user IDs use strings.
+                        - `false`: Both agent and subscriber user IDs must be integers.
+                    idle_timeout:
+                      type: integer
+                      default: 30
+                      description: Sets the timeout after all the users specified in `remote_rtc_uids` are detected to have left the channel. When the timeout value is exceeded, the agent automatically stops and exits the channel. A value of `0` means that the agent does not exit until it is stopped manually.
+                    geofence:
+                      type: object
+                      description: Regional access restriction configuration. Use this to limit which Agora servers the Conversational AI Engine can access based on geographic regions.
+                      required:
+                        - area
+                      properties:
+                        area:
+                          type: string
+                          enum:
+                            - GLOBAL
+                            - NORTH_AMERICA
+                            - EUROPE
+                            - ASIA
+                            - INDIA
+                            - JAPAN
+                          description: The allowed region for server access.
+                        exclude_area:
+                          type: string
+                          enum:
+                            - NORTH_AMERICA
+                            - EUROPE
+                            - ASIA
+                            - INDIA
+                            - JAPAN
+                          description: The excluded region. Only available when `area` is set to `GLOBAL`.
+                    advanced_features:
+                      type: object
+                      description: Advanced features configuration.
+                      properties:
+                        enable_mllm:
+                          type: boolean
+                          default: false
+                          deprecated: true
+                          description: Use `mllm.enable` instead. Enable Multimodal Large Language Model for voice-to-voice processing. Enabling MLLM automatically disables ASR, LLM, and TTS since the MLLM handles end-to-end voice processing directly. See `turn_detection.type` for turn detection options available with MLLM.
+                        enable_rtm:
+                          type: boolean
+                          default: false
+                          description: Whether to enable the Signaling (RTM) service. When enabled, the agent can combine the capabilities provided by Signaling to implement advanced functions, such as delivering custom information. Before enabling the Signaling service, make sure the token includes both RTC and RTM privileges.
+                        enable_sal:
+                          type: boolean
+                          default: false
+                          description: Enable Selective Attention Locking (SAL). When enabled, configure the `sal` field to set up speaker recognition or locking modes.
+                        enable_tools:
+                          type: boolean
+                          default: false
+                          description: Enable tool invocation. When enabled, the agent can invoke tools provided by the MCP server to implement advanced functionality.
+                    asr:
+                      type: object
+                      description: Automatic Speech Recognition (ASR) configuration.
+                      properties:
+                        language:
+                          type: string
+                          default: en-US
+                          description: The BCP-47 language tag identifying the primary language used for agent interaction. If `params` contains a vendor-specific language code, it takes precedence over this setting.
+                        vendor:
+                          type: string
+                          default: ares
+                          enum:
+                            - ares
+                            - microsoft
+                            - deepgram
+                            - openai
+                            - google
+                            - amazon
+                            - assemblyai
+                            - speechmatics
+                            - sarvam
+                          description: |-
+                            ASR provider:
+                            - `ares`: Adaptive Recognition Engine for Speech
+                            - `microsoft`: Microsoft Azure
+                            - `deepgram`: Deepgram
+                            - `openai`: OpenAI (Beta)
+                            - `speechmatics`: Speechmatics
+                            - `assemblyai`: AssemblyAI (Beta)
+                            - `amazon`: Amazon Transcribe (Beta)
+                            - `google`: Google (Beta)
+                            - `sarvam`: Sarvam (Beta)
+                        params:
+                          type: object
+                          description: The configuration parameters for the ASR vendor. See [ASR Overview](https://docs.agora.io/en/conversational-ai/models/asr/overview) for details.
+                          additionalProperties: true
+                    tts:
+                      type: object
+                      required:
+                        - vendor
+                        - params
+                      description: Text-to-speech (TTS) module configuration.
+                      properties:
+                        vendor:
+                          type: string
+                          enum:
+                            - microsoft
+                            - elevenlabs
+                            - minimax
+                            - deepgram
+                            - murf
+                            - cartesia
+                            - openai
+                            - humeai
+                            - rime
+                            - fishaudio
+                            - google
+                            - amazon
+                            - sarvam
+                          description: |-
+                            TTS provider:
+                            - `microsoft`: Microsoft Azure
+                            - `elevenlabs`: ElevenLabs
+                            - `minimax`: MiniMax
+                            - `deepgram`: Deepgram (Beta)
+                            - `murf`: Murf (Beta)
+                            - `cartesia`: Cartesia (Beta)
+                            - `openai`: OpenAI (Beta)
+                            - `humeai`: Hume AI (Beta)
+                            - `rime`: Rime (Beta)
+                            - `fishaudio`: Fish Audio (Beta)
+                            - `google`: Google (Beta)
+                            - `amazon`: Amazon Polly (Beta)
+                            - `sarvam`: Sarvam (Beta)
+                        params:
+                          type: object
+                          description: The configuration parameters for the TTS vendor. See [TTS Overview](https://docs.agora.io/en/conversational-ai/models/tts/overview) for details.
+                          additionalProperties: true
+                        skip_patterns:
+                          type: array
+                          description: |-
+                            Controls whether the TTS module skips bracketed content when reading LLM response text. Enable this feature by specifying one or more values:
+                            - `1`: Skip content in Chinese parentheses （）
+                            - `2`: Skip content in Chinese square brackets 【】
+                            - `3`: Skip content in parentheses ( )
+                            - `4`: Skip content in square brackets [ ]
+                            - `5`: Skip content in curly braces { }
+
+                            > - **Nested brackets**: When input text contains nested brackets and multiple bracket types are configured to be skipped, the system processes only the outermost brackets. The system matches from the beginning of the text and skips the first outermost bracket pair that meets the skip rule, including all nested content.
+                            > - **Agent memory**: The agent's short-term memory always contains the complete, unfiltered LLM text, regardless of live captioning settings.
+                            > - **Real-time transcript**: When enabled, transcript excludes filtered content during TTS playback but restores the complete text after each sentence finishes.
+                          items:
+                            type: integer
+                          default: []
+                    llm:
+                      type: object
+                      required:
+                        - url
+                      description: Large language model (LLM) configuration.
+                      properties:
+                        url:
+                          type: string
+                          description: The LLM callback address.
+                        api_key:
+                          type: string
+                          default: ''
+                          description: The LLM verification API key. The default value is an empty string. Ensure that you enable the API key in a production environment.
+                        system_messages:
+                          type: array
+                          description: A set of predefined information used as input to the LLM, including prompt words and examples.
+                          items:
+                            type: object
+                            additionalProperties: true
+                        params:
+                          type: object
+                          description: Additional LLM configuration parameters, such as the `model` used, and the maximum token limit. For details about each supported LLM, refer to [Supported LLMs](https://docs.agora.io/en/conversational-ai/models/llm/overview#supported-llms).
+                          additionalProperties: true
+                        max_history:
+                          type: integer
+                          default: 32
+                          minimum: 1
+                          maximum: 1024
+                          description: The number of conversation history messages cached in the custom LLM. History includes user and agent dialog messages, tool call information, and timestamps. Agent and user messages are recorded separately.
+                        input_modalities:
+                          type: array
+                          default: ['text']
+                          description: |-
+                            LLM input modalities:
+                            - `["text"]`: Text only
+                            - `["text", "image"]`: Text plus image. Recommended configuration, requires the selected LLM to support visual input
+                          items:
+                            type: string
+                        output_modalities:
+                          type: array
+                          default: ['text']
+                          description: |-
+                            LLM output modalities:
+                            - `["text"]`: The output text is converted to speech by the TTS module and then published to the RTC channel.
+                            - `["audio"]`: Voice only. Voice is published directly to the RTC channel.
+                            - `["text", "audio"]`: Text plus voice. Write your own logic to process the output of LLM as needed.
+                          items:
+                            type: string
+                        greeting_message:
+                          type: string
+                          description: Agent greeting. If provided, the first user in the channel is automatically greeted with the message upon joining.
+                        failure_message:
+                          type: string
+                          description: Prompt for agent activation failure. If provided, it is returned through TTS when the custom LLM call fails.
+                        vendor:
+                          type: string
+                          description: |-
+                            LLM provider, supports the following settings:
+                            - `custom`: Custom LLM. When you set this option, the agent includes the following fields, in addition to `role` and `content` when making requests to the custom LLM:
+                              - `turn_id`: A unique identifier for each conversation turn. It starts from `0` and increments with each turn. One user-agent interaction corresponds to one `turn_id`.
+                              - `timestamp`: The request timestamp, in milliseconds.
+                            - `azure`: Use this value for Azure OpenAI
+                        style:
+                          type: string
+                          default: openai
+                          enum:
+                            - openai
+                            - gemini
+                            - anthropic
+                            - dify
+                          description: |-
+                            The request style for chat completion:
+                            - `openai`: For OpenAI and OpenAI-compatible APIs
+                            - `gemini`: For Google Gemini and Google Vertex API format
+                            - `anthropic`: For Anthropic Claude API format
+                            - `dify`: For Dify API format
+                        greeting_configs:
+                          type: object
+                          description: Agent greeting broadcast configuration.
+                          properties:
+                            mode:
+                              type: string
+                              default: single_every
+                              enum:
+                                - single_every
+                                - single_first
+                              description: |-
+                                Determines when the agent sends greeting messages to users joining the channel.
+                                - `single_every`: Broadcasts a greeting every time a user joins the channel.
+                                - `single_first`: Broadcasts a greeting only once to the first user who joins the channel.
+                            delay_ms:
+                              type: integer
+                              minimum: 0
+                              maximum: 5000
+                              description: The delay in milliseconds before the agent plays the greeting message after a user joins the channel.
+                            interruptable:
+                              type: boolean
+                              default: true
+                              description: |-
+                                - `true`: Follows the global `interruption` configuration.
+                                - `false`: Uninterruptible. The greeting plays in its entirety. If the user speaks multiple times while the greeting plays, the system merges the speech segments after the greeting ends and sends them to the LLM for a single response.
+                        template_variables:
+                          type: object
+                          description: Template parameter configuration used to insert variables into the agent's `system_messages`, `greeting_message`, `failure_message`, and `parameters.silence_config.content` text. Uses key-value pairs, where the key is the variable name and the value is the variable's value. To insert defined variables in the prompt text, use the syntax `{{variable_name}}`. The system automatically replaces each variable with the corresponding value defined in `template_variables`. Variable values cannot reference other variables.
+                          additionalProperties:
+                            type: string
+                        mcp_servers:
+                          type: array
+                          description: MCP (Model Context Protocol) server configuration. By configuring MCP servers, agents can call tools provided by external services to implement advanced functionality.
+                          items:
+                            type: object
+                            required:
+                              - name
+                              - endpoint
+                            properties:
+                              name:
+                                type: string
+                                maxLength: 48
+                                description: A unique identifier for the MCP server. Maximum 48 characters. Accepts only English letters and numbers.
+                              endpoint:
+                                type: string
+                                description: The endpoint address of the MCP server. The agent uses this to communicate with the MCP server.
+                              transport:
+                                type: string
+                                enum:
+                                  - streamable_http
+                                description: |-
+                                  Transport protocol type.
+                                  - `streamable_http`: Streaming HTTP protocol
+                              headers:
+                                type: object
+                                description: HTTP header information to include when requesting the MCP server, such as authentication information.
+                                additionalProperties:
+                                  type: string
+                              allowed_tools:
+                                type: array
+                                description: |-
+                                  A list of tools that the agent is allowed to invoke. The agent can only use tools on this list.
+                                  - Empty or omitted: All tools are enabled.
+                                  - Empty array `[]`: No tools are enabled.
+                                  - `["*"]`: All tools are enabled.
+                                  - Specific tools `["aa", "bb"]`: Only listed tools are enabled.
+                                  - Mix with wildcard `["aa", "*"]`: All tools are enabled (wildcard takes precedence).
+                                items:
+                                  type: string
+                              timeout_ms:
+                                type: integer
+                                description: The MCP server request timeout in milliseconds. After timeout, the agent stops waiting for the MCP server's response and continues executing subsequent logic.
+                        headers:
+                          type: object
+                          description: Custom headers to include in requests to the LLM. Use this field to pass business-specific information such as custom fields or tenant identifiers. These headers are merged with the headers generated by the Conversational AI Engine. If a key conflict occurs, the engine-generated header takes precedence.
+                          additionalProperties:
+                            type: string
+                    mllm:
+                      type: object
+                      description: Multimodal Large Language Model (MLLM) configuration for real-time audio and text processing. `mllm` is an exclusive alternative to the standard `asr` + `llm` + `tts` pipeline.
+                      properties:
+                        enable:
+                          type: boolean
+                          description: Enable Multimodal Large Language Model for voice-to-voice processing. Enabling MLLM automatically disables ASR, LLM, and TTS since the MLLM handles end-to-end voice processing directly. Replaces the deprecated `advanced_features.enable_mllm`.
+                        url:
+                          type: string
+                          description: The MLLM WebSocket URL for real-time communication.
+                        api_key:
+                          type: string
+                          description: The API key used for MLLM authentication.
+                        messages:
+                          type: array
+                          description: Array of conversation items used for short-term memory management. Uses the same structure as `item.content` from the OpenAI Realtime API.
+                          items:
+                            type: object
+                            additionalProperties: true
+                        params:
+                          type: object
+                          description: Additional MLLM configuration parameters. The `modalities` setting is overridden by `input_modalities` and `output_modalities`. The `turn_detection` setting is overridden by `mllm.turn_detection`.
+                          additionalProperties: true
+                        input_modalities:
+                          type: array
+                          default: ['audio']
+                          description: |-
+                            MLLM input modalities:
+                            - `["audio"]`: Audio only
+                            - `["audio", "text"]`: Audio plus text
+                          items:
+                            type: string
+                        output_modalities:
+                          type: array
+                          default: ['text', 'audio']
+                          description: |-
+                            MLLM output modalities:
+                            - `["text", "audio"]`: Text plus audio
+                          items:
+                            type: string
+                        greeting_message:
+                          type: string
+                          description: Agent greeting message. If provided, the first user in the channel is automatically greeted with this message upon joining.
+                        vendor:
+                          type: string
+                          enum:
+                            - openai
+                            - gemini
+                            - vertexai
+                          description: |-
+                            MLLM provider. Currently supports:
+                            - `openai`: OpenAI Realtime API
+                            - `gemini`: Google Gemini Live
+                            - `vertexai`: Google Gemini Live (Vertex AI)
+                        style:
+                          type: string
+                          default: openai
+                          enum:
+                            - openai
+                          description: |-
+                            The request style for MLLM completion:
+                            - `openai`: For OpenAI Realtime API format
+                        turn_detection:
+                          type: object
+                          description: Turn detection configuration for the MLLM module. When defined, the top-level `turn_detection` object has no effect.
+                          properties:
+                            mode:
+                              type: string
+                              enum:
+                                - agora_vad
+                                - server_vad
+                                - semantic_vad
+                              description: |-
+                                Turn detection mode for MLLM:
+                                - `agora_vad`: Agora VAD-based detection.
+                                - `server_vad`: Vendor-side VAD-based detection. Supported by OpenAI Realtime API and Gemini Live.
+                                - `semantic_vad`: Semantic-based detection. Supported by OpenAI Realtime API only.
+                            agora_vad_config:
+                              type: object
+                              description: Configuration for Agora VAD-based turn detection. Applicable when `mode` is `agora_vad`.
+                              properties:
+                                interrupt_duration_ms:
+                                  type: integer
+                                  description: Minimum duration of speech in milliseconds required to trigger an interruption.
+                                prefix_padding_ms:
+                                  type: integer
+                                  description: Duration of audio in milliseconds to include before the detected speech start.
+                                silence_duration_ms:
+                                  type: integer
+                                  description: Duration of silence in milliseconds required to determine end of speech.
+                                threshold:
+                                  type: number
+                                  description: VAD sensitivity threshold. A higher value reduces false positives.
+                            server_vad_config:
+                              type: object
+                              description: Configuration for vendor-side VAD-based turn detection. Applicable when `mode` is `server_vad`. Parameters are passed through to the vendor.
+                              properties:
+                                prefix_padding_ms:
+                                  type: integer
+                                  description: Duration of audio in milliseconds to include before the detected speech start.
+                                silence_duration_ms:
+                                  type: integer
+                                  description: Duration of silence in milliseconds required to determine end of speech.
+                                threshold:
+                                  type: number
+                                  description: VAD sensitivity threshold. Applicable to OpenAI Realtime API only.
+                                idle_timeout_ms:
+                                  type: integer
+                                  description: Idle timeout in milliseconds. Applicable to OpenAI Realtime API only.
+                                start_of_speech_sensitivity:
+                                  type: string
+                                  enum:
+                                    - START_SENSITIVITY_HIGH
+                                    - START_SENSITIVITY_LOW
+                                  description: Sensitivity for start of speech detection. Applicable to Gemini Live only.
+                                end_of_speech_sensitivity:
+                                  type: string
+                                  enum:
+                                    - END_SENSITIVITY_HIGH
+                                    - END_SENSITIVITY_LOW
+                                  description: Sensitivity for end of speech detection. Applicable to Gemini Live only.
+                            semantic_vad_config:
+                              type: object
+                              description: Configuration for semantic-based turn detection. Applicable when `mode` is `semantic_vad`. Supported by OpenAI Realtime API only.
+                              properties:
+                                eagerness:
+                                  type: string
+                                  enum:
+                                    - auto
+                                    - low
+                                    - medium
+                                    - high
+                                  description: Controls how eagerly the model ends its turn.
+                    avatar:
+                      type: object
+                      description: Avatar configuration.
+                      properties:
+                        enable:
+                          type: boolean
+                          default: false
+                          description: Whether to enable the avatar function for the agent. To enable, set to `true` and configure the `vendor` and `params` fields.
+                        vendor:
+                          type: string
+                          enum:
+                            - akool
+                            - liveavatar
+                            - anam
+                            - generic
+                          description: |-
+                            Avatar vendor. Supports the following values:
+                            - `akool`: Akool (Beta)
+                            - `liveavatar`: LiveAvatar (Beta)
+                            - `anam`: Anam (Beta)
+                            - `generic`: Generic (Beta)
+                        params:
+                          type: object
+                          description: The configuration parameters for the avatar vendor. See [AI Avatar Overview](https://docs.agora.io/en/conversational-ai/models/avatar/overview) for details.
+                          additionalProperties: true
+                    turn_detection:
+                      type: object
+                      description: Conversation turn detection settings. Controls the logic for voice activity detection and conversation turn determination. This object has no effect when `mllm.enable` is true; use `mllm.turn_detection` instead.
+                      properties:
+                        mode:
+                          type: string
+                          default: default
+                          enum:
+                            - default
+                          description: |-
+                            Conversation turn detection mode:
+                            - `default`: Uses standard conversation turn detection configuration.
+                        config:
+                          type: object
+                          description: Detailed configuration for conversation turn detection.
+                          properties:
+                            speech_threshold:
+                              type: number
+                              default: 0.5
+                              minimum: 0.0
+                              maximum: 1.0
+                              description: Voice activity detection sensitivity. Determines the sound level in the audio signal that is considered voice activity. Lower values make it easier for the agent to detect speech, and higher values ignore weak sounds.
+                            start_of_speech:
+                              type: object
+                              description: Start of Speech (SoS) detection configuration. Determines when a user begins speaking.
+                              required:
+                                - mode
+                              properties:
+                                mode:
+                                  type: string
+                                  enum:
+                                    - vad
+                                    - keywords
+                                    - disabled
+                                  description: |-
+                                    Start of speech detection mode:
+                                    - `vad`: Based on VAD (Voice Activity Detection). Uses audio signal detection.
+                                    - `keywords`: Deprecated. Use `interruption.mode = "keywords"` instead.
+                                    - `disabled`: Deprecated. Use `interruption.enable = false` with `interruption.disabled_config.strategy` to configure the handling strategy.
+                                vad_config:
+                                  type: object
+                                  description: VAD configuration. Used when `mode` is `vad`.
+                                  properties:
+                                    interrupt_duration_ms:
+                                      type: integer
+                                      default: 160
+                                      minimum: 120
+                                      maximum: 1200
+                                    speaking_interrupt_duration_ms:
+                                      type: integer
+                                      default: 160
+                                      minimum: 120
+                                      maximum: 1200
+                                    prefix_padding_ms:
+                                      type: integer
+                                      default: 800
+                                      minimum: 0
+                                      maximum: 5000
+                                keywords_config:
+                                  type: object
+                                  description: Keywords configuration. Used when `mode` is `keywords`.
+                                  properties:
+                                    interrupt_duration_ms:
+                                      type: integer
+                                      default: 160
+                                      minimum: 120
+                                      maximum: 1200
+                                    prefix_padding_ms:
+                                      type: integer
+                                      default: 800
+                                      minimum: 0
+                                      maximum: 5000
+                                    triggered_keywords:
+                                      type: array
+                                      items:
+                                        type: string
+                                disabled_config:
+                                  type: object
+                                  description: Disabled mode configuration. Used when `mode` is `disabled`.
+                                  properties:
+                                    strategy:
+                                      type: string
+                                      enum:
+                                        - append
+                                        - ignore
+                                      description: |-
+                                        Voice processing strategy when the agent is interacting:
+                                        - `append`: Human voice does not interrupt the agent. The agent processes the human voice input after the current interaction ends.
+                                        - `ignore`: The agent ignores human voice input and discards it without storing in context.
+                            end_of_speech:
+                              type: object
+                              description: End of Speech (EoS) detection configuration. Determines when a user ends their speech.
+                              properties:
+                                mode:
+                                  type: string
+                                  enum:
+                                    - vad
+                                    - semantic
+                                  description: |-
+                                    End of speech detection mode:
+                                    - `vad`: Based on VAD (Voice Activity Detection). Detects silence duration.
+                                    - `semantic`: Based on semantic triggering. Uses semantic understanding to determine when conversation ends.
+                                vad_config:
+                                  type: object
+                                  description: VAD configuration. Used when `mode` is `vad`.
+                                  properties:
+                                    silence_duration_ms:
+                                      type: integer
+                                      default: 640
+                                      minimum: 120
+                                      maximum: 2000
+                                semantic_config:
+                                  type: object
+                                  description: Semantic configuration. Used when `mode` is `semantic`.
+                                  properties:
+                                    silence_duration_ms:
+                                      type: integer
+                                      default: 320
+                                      minimum: 120
+                                      maximum: 2000
+                                    max_wait_ms:
+                                      type: integer
+                                      default: 3000
+                                      minimum: 500
+                                      maximum: 10000
+                                      description: Maximum wait time in milliseconds. Use `-1` for no timeout. The maximum time to wait for semantic determination. After timeout, the conversation end is determined based on the current state.
+                                    pause_state_enabled:
+                                      type: boolean
+                                      default: true
+                                      description: |-
+                                        Whether to detect user intent to pause the conversation:
+                                        - `true`: The agent uses semantic understanding to determine if the user intends to pause the conversation. For example, when the user's input ends with phrases such as "hold on" or "just a moment", the agent waits for further input rather than treating the utterance as complete and sending it to the LLM.
+                                        - `false`: The agent does not detect intent to pause the conversation.
+                        type:
+                          type: string
+                          default: agora_vad
+                          enum:
+                            - agora_vad
+                            - server_vad
+                            - semantic_vad
+                          deprecated: true
+                          description: |-
+                            Deprecated. Use `turn_detection.mode` and `turn_detection.config` instead.
+                            Turn detection mechanism:
+                            - `agora_vad`: Agora VAD
+                            - `server_vad`: The model detects the start and end of speech based on audio volume. Only available when `mllm` is enabled and OpenAI is selected.
+                            - `semantic_vad`: Uses a turn detection model with VAD to semantically estimate whether the user has finished speaking. Only available when `mllm` is enabled and OpenAI is selected.
+                        interrupt_mode:
+                          type: string
+                          default: interrupt
+                          deprecated: true
+                          enum:
+                            - interrupt
+                            - append
+                            - ignore
+                            - keyword
+                            - adaptive
+                          description: |-
+                            Deprecated. Use `turn_detection.config.start_of_speech` instead.
+                            Sets the agent's behavior when human voice interrupts the agent while it is interacting (speaking or thinking):
+                            - `interrupt`: The agent immediately stops the current interaction and processes the human voice input.
+                            - `append`: The agent completes the current interaction, then processes the human voice input.
+                            - `ignore`: The agent discards the human voice input without processing or storing it in the context.
+                            - `keyword`: The agent stops its current interaction after detecting any of the keywords specified in `interrupt_keywords`.
+                            - `adaptive`: The agent dynamically increases the voice continuity threshold while speaking to reduce accidental interruptions.
+                        interrupt_duration_ms:
+                          type: number
+                          default: 160
+                          deprecated: true
+                          description: Deprecated. Use `turn_detection.config.start_of_speech.vad_config.interrupt_duration_ms` instead. The amount of time in milliseconds that the user's voice must exceed the VAD threshold before an interruption is triggered.
+                        interrupt_keywords:
+                          type: array
+                          deprecated: true
+                          description: Deprecated. Use `turn_detection.config.start_of_speech.keywords_config.triggered_keywords` instead. Specifies the list of keywords that trigger an interruption when `interrupt_mode` is set to `keyword`. You can configure up to 128 keywords.
+                          items:
+                            type: string
+                        prefix_padding_ms:
+                          type: integer
+                          default: 800
+                          deprecated: true
+                          description: Deprecated. Use `turn_detection.config.start_of_speech.vad_config.prefix_padding_ms` instead. The extra forward padding time in milliseconds before the processing system starts to process the speech input.
+                        silence_duration_ms:
+                          type: integer
+                          default: 640
+                          deprecated: true
+                          description: Deprecated. Use `turn_detection.config.end_of_speech.vad_config.silence_duration_ms` instead. The duration of audio silence in milliseconds. If no voice activity is detected during this period, the agent assumes that the user has stopped speaking.
+                        threshold:
+                          type: number
+                          default: 0.5
+                          minimum: 0.0
+                          maximum: 1.0
+                          deprecated: true
+                          description: Deprecated. Use `turn_detection.config.speech_threshold` instead. Identification sensitivity determines the level of sound in the audio signal that is considered voice activity.
+                        create_response:
+                          type: boolean
+                          default: true
+                          description: Whether to automatically generate a response when a VAD stop event occurs. Only available in `server_vad` and `semantic_vad` modes when using OpenAI Realtime API.
+                        interrupt_response:
+                          type: boolean
+                          default: true
+                          description: Whether to automatically interrupt any ongoing response when a VAD start event occurs. Only available in `server_vad` and `semantic_vad` modes when using OpenAI Realtime API.
+                        eagerness:
+                          type: string
+                          default: auto
+                          deprecated: true
+                          enum:
+                            - auto
+                            - low
+                            - high
+                          description: |-
+                            Deprecated. Only available in `semantic_vad` mode when using OpenAI Realtime API.
+                            The eagerness of the model to respond:
+                            - `auto`: Equivalent to medium
+                            - `low`: Wait longer for the user to continue speaking
+                            - `high`: Respond more quickly
+                    interruption:
+                      type: object
+                      description: Interruption control configuration. Provides unified management of the agent's behavior when interrupted by the user.
+                      properties:
+                        enable:
+                          type: boolean
+                          default: true
+                          description: |-
+                            Whether to enable agent interruption:
+                            - `true`: Enable interruption.
+                            - `false`: Disable interruption. When disabled, the agent cannot be interrupted mid-response.
+                        mode:
+                          type: string
+                          default: start_of_speech
+                          enum:
+                            - start_of_speech
+                            - keywords
+                          description: |-
+                            The interruption trigger mode:
+                            - `start_of_speech`: Trigger interruption when the user starts speaking.
+                            - `keywords`: Trigger interruption when the user speaks a specified keyword. Configure the trigger keywords in `keywords_config`.
+                        keywords_config:
+                          type: object
+                          description: Configuration for keyword-based interruption triggering. Applicable only when `mode` is `keywords`.
+                          properties:
+                            trigger_keywords:
+                              type: array
+                              description: The list of keywords that trigger an interruption. A maximum of 128 keywords is supported.
+                              items:
+                                type: string
+                        disabled_config:
+                          type: object
+                          description: Configuration for agent behavior when interruption is disabled. Applicable only when `interruption.enable` is `false`.
+                          properties:
+                            strategy:
+                              type: string
+                              enum:
+                                - append
+                                - ignore
+                              description: |-
+                                The processing strategy when interruption is disabled:
+                                - `append`: User speech does not interrupt the agent. The agent processes the user's input after the current interaction ends.
+                                - `ignore`: The agent ignores user speech. If the agent receives user speech while speaking or thinking, it discards the input without storing it in context.
+                    sal:
+                      type: object
+                      description: Selective Attention Locking (SAL) configuration.
+                      properties:
+                        sal_mode:
+                          type: string
+                          default: locking
+                          enum:
+                            - locking
+                            - recognition
+                          description: |-
+                            Selective attention lock mode:
+                            - `locking`: Speaker Lock Mode. The agent locks onto the speaker, blocking 95% of ambient human voices and noise. You can enable this mode in two ways:
+                              - Seamless mode: When a user speaks loudly and clearly at the beginning of a conversation, the intelligent agent automatically recognizes the user as the speaker.
+                              - Personalized mode: When creating an agent, a speaker's voiceprint URL is pre-registered through the `sample_urls` field. The agent then locates the speaker based on the pre-registered voiceprint.
+                            - `recognition`: Voiceprint recognition mode. The agent identifies different speakers and suppresses other background voices and environmental noise.
+                        sample_urls:
+                          type: object
+                          description: |- 
+                            The registered voiceprint URL as a key-value pair, where the key is the voiceprint name and the value is the download URL for the speaker's voiceprint. Only one voiceprint URL is supported.
+                            > - Do not set the incoming voiceprint name to "unknown"; this is a reserved keyword used to identify unknown speakers.
+                            > - For a registered voiceprint, ensure that:
+                            >   - Size: A single voiceprint file must not exceed 2 MB.
+                            >   - Duration: 10 to 15 seconds, with at least 8 seconds of effective audio without silent segments.
+                            >   - Format: 16kHz sampling rate, 16-bit depth, mono PCM audio file. The file name extension must be ".pcm".      
+                          additionalProperties:
+                            type: string
+                    labels:
+                      type: object
+                      description: Custom labels in key-value pair format, where the key is the label name and the value is the label value. Enables agents to carry custom business information. These labels are bound to the agent and returned in the `payload` field of all message notification callbacks from the conversational AI engine.
+                      additionalProperties:
+                        type: string
+                    rtc:
+                      type: object
+                      description: RTC media encryption configuration.
+                      properties:
+                        encryption_key:
+                          type: string
+                          description: The encryption key for RTC media content. The key has no length limit. Agora recommends using a 32-byte key. If no encryption key is set or if the key is empty, built-in encryption is not used.
+                        encryption_salt:
+                          type: string
+                          description: The salt value used for encryption. This is a Base64-encoded string that is 32 bytes long after decoding. This parameter only takes effect when `encryption_mode` is set to `7` (AES_128_GCM2) or `8` (AES_256_GCM2). Ensure that the salt parameter is not empty for these encryption modes.
+                        encryption_mode:
+                          type: integer
+                          enum:
+                            - 1
+                            - 2
+                            - 3
+                            - 4
+                            - 5
+                            - 6
+                            - 7
+                            - 8
+                          description: |-
+                            The built-in encryption mode.
+                            - `1`: AES_128_XTS - 128-bit AES encryption, XTS mode.
+                            - `2`: AES_128_ECB - 128-bit AES encryption, ECB mode.
+                            - `3`: AES_256_XTS - 256-bit AES encryption, XTS mode.
+                            - `4`: SM4_128_ECB - 128-bit SM4 encryption, ECB mode.
+                            - `5`: AES_128_GCM - 128-bit AES encryption, GCM mode.
+                            - `6`: AES_256_GCM - 256-bit AES encryption, GCM mode.
+                            - `7`: AES_128_GCM2 - 128-bit AES encryption, GCM mode. Requires setting `encryption_salt`.
+                            - `8`: AES_256_GCM2 - 256-bit AES encryption, GCM mode. Requires setting `encryption_salt`.
+                    filler_words:
+                      type: object
+                      description: Filler word configuration. Plays filler words while waiting for LLM responses to reduce user anxiety and improve conversation flow.
+                      properties:
+                        enable:
+                          type: boolean
+                          default: false
+                          description: |-
+                            Whether to enable filler words:
+                            - `true`: Enable filler words.
+                            - `false`: Disable filler words.
+                        trigger:
+                          type: object
+                          description: Filler word trigger configuration. Defines when to trigger filler word playback.
+                          properties:
+                            mode:
+                              type: string
+                              enum:
+                                - fixed_time
+                              description: |-
+                                Filler word trigger mode:
+                                - `fixed_time`: Fixed time trigger. Triggers filler word playback when LLM response wait time exceeds the threshold.
+                            fixed_time_config:
+                              type: object
+                              description: Fixed time trigger configuration. Used when `mode` is `fixed_time`.
+                              properties:
+                                response_wait_ms:
+                                  type: integer
+                                  default: 1500
+                                  minimum: 100
+                                  maximum: 10000
+                                  description: LLM response wait threshold in milliseconds. Triggers filler word playback when the LLM waits this duration without generating a response.
+                        content:
+                          type: object
+                          description: Filler word content configuration. Defines the source and selection rules for filler words.
+                          properties:
+                            mode:
+                              type: string
+                              enum:
+                                - static
+                              description: |-
+                                Filler word content mode:
+                                - `static`: Static filler words. Uses a predefined list of filler words.
+                            static_config:
+                              type: object
+                              description: Static filler word configuration. Used when `mode` is `static`.
+                              required:
+                                - phrases
+                              properties:
+                                phrases:
+                                  type: array
+                                  description: List of filler word phrases. Maximum 100 filler words, each not exceeding 50 English words.
+                                  items:
+                                    type: string
+                                selection_rule:
+                                  type: string
+                                  enum:
+                                    - shuffle
+                                    - round_robin
+                                  description: |-
+                                    Filler word selection rule:
+                                    - `shuffle`: Random shuffle. Already-used filler words are not repeated until all have been used once.
+                                    - `round_robin`: Round-robin. Selects and plays filler words sequentially from the list.
+                    parameters:
+                      type: object
+                      description: Agent configuration parameters.
+                      properties:
+                        silence_config:
+                          type: object
+                          description: Settings related to agent silence behavior. Does not apply when you integrate a `mllm`.
+                          properties:
+                            timeout_ms:
+                              type: integer
+                              default: 0
+                              minimum: 0
+                              maximum: 60000
+                              description: |-
+                                Specifies the maximum duration (in milliseconds) that the agent can remain silent.
+                                - `0`: Disables the silent reminder feature.
+                                - `(0, 60000]`: Enables the silent reminder. You must also set `content`.
+                            action:
+                              type: string
+                              default: speak
+                              enum:
+                                - speak
+                                - think
+                              description: |-
+                                Specifies how the agent behaves when the silent timeout is reached:
+                                - `speak`: Uses the TTS module to announce the silent prompt (`content`).
+                                - `think`: Appends the silent prompt (`content`) to the context and passes it to the LLM.
+                            content:
+                              type: string
+                              description: Specifies the silent prompt message. The message use depends on the value of `action` parameter.
+                        farewell_config:
+                          type: object
+                          description: Graceful hang-up settings for the agent.
+                          properties:
+                            graceful_enabled:
+                              type: boolean
+                              default: false
+                              description: |-
+                                Enable graceful leave:
+                                - `true`: When enabled, calling the POST method to stop the agent ensures that the agent is in an `IDLE` state before leaving the channel.
+                                - `false`: Disabled.
+                            graceful_timeout_seconds:
+                              type: integer
+                              default: 30
+                              minimum: 0
+                              maximum: 120
+                              description: Graceful exit timeout (in seconds). Represents the maximum time to wait for the agent to enter an `IDLE` state before exiting the channel. This field is only effective when `graceful_enabled` is `true`.
+                        data_channel:
+                          type: string
+                          default: datastream
+                          enum:
+                            - rtm
+                            - datastream
+                          description: |-
+                            Agent data transmission channel:
+                            - `rtm`: Use RTM transmission. This configuration takes effect only when `advanced_features.enable_rtm` is `true`.
+                            - `datastream`: Use RTC data stream transport.
+                        enable_metrics:
+                          type: boolean
+                          default: false
+                          description: Whether to receive agent performance data. This setting only takes effect when `advanced_features.enable_rtm` is `true`.
+                        enable_error_message:
+                          type: boolean
+                          default: false
+                          description: Whether to receive agent error events. This setting only takes effect when `advanced_features.enable_rtm` is `true`.
+                        audio_scenario:
+                          type: string
+                          default: default
+                          enum:
+                            - default
+                            - chorus
+                            - aiserver
+                          description: |-
+                            The audio scenario for the RTC channel.
+                            - `default`: Maps to `aiserver`.
+                            - `chorus`: Real-time chorus scenario, where users have good network conditions and require ultra-low latency.
+                            - `aiserver`: Optimized for interactions between the user and the conversational AI agent in terms of latency and network resilience.
+            examples:
+              Default:
+                value:
+                  name: unique_name
+                  properties:
+                    channel: channel_name
+                    token: token
+                    agent_rtc_uid: '1001'
+                    remote_rtc_uids:
+                      - '1002'
+                    idle_timeout: 120
+                    advanced_features:
+                      enable_aivad: true
+                    llm:
+                      url: https://api.openai.com/v1/chat/completions
+                      api_key: <your_llm_key>
+                      system_messages:
+                        - role: system
+                          content: You are a helpful chatbot.
+                      max_history: 32
+                      greeting_message: Hello, how can I assist you today?
+                      failure_message: Please hold on a second.
+                      params:
+                        model: gpt-4o-mini
+                    tts:
+                      vendor: microsoft
+                      params:
+                        key: <your_tts_api_key>
+                        region: eastus
+                        voice_name: en-US-AndrewMultilingualNeural
+                    asr:
+                      language: en-US
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                    description: Unique id of the agent instance
+                  create_ts:
+                    type: integer
+                    description: Timestamp of when the agent was created
+                  status:
+                    type: string
+                    enum:
+                      - IDLE
+                      - STARTING
+                      - RUNNING
+                      - STOPPING
+                      - STOPPED
+                      - FAILED
+                    description: |-
+                      Current status:
+                      - `IDLE` (0): Agent is idle.
+                      - `STARTING` (1): The agent is being started.
+                      - `RUNNING` (2): The agent is running.
+                      - `STOPPING` (3): The agent is stopping.
+                      - `STOPPED` (4): The agent has exited.
+                      - `FAILED` (6): The agent failed to execute.
+              examples:
+                Success:
+                  value:
+                    agent_id: 1NT29X10YHxxxxxWJOXLYHNYB
+                    create_ts: 1737111452
+                    status: RUNNING
+        default:
+          description: Request failed. The response body includes the `detail` and `reason` for failure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+
+  /v2/projects/{appid}/agents:
+    get:
+      tags:
+        - Agent Management
+      summary: Retrieve a list of agents
+      description: Retrieve a list of agents that meet the specified conditions.
+      operationId: list-agents
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - name: channel
+          in: query
+          required: false
+          description: The channel to query for a list of agents.
+          schema:
+            type: string
+        - name: from_time
+          in: query
+          required: false
+          description: The start timestamp (in seconds) for the query. Default is 2 hours ago.
+          schema:
+            type: number
+        - name: to_time
+          in: query
+          required: false
+          description: The end timestamp (in seconds) for the query. Default is current time.
+          schema:
+            type: number
+        - name: state
+          in: query
+          required: false
+          description: |-
+            The agent state to filter by. Only one state can be specified per query:
+            - `IDLE` (0): Agent is idle.
+            - `STARTING` (1): The agent is being started.
+            - `RUNNING` (2): The agent is running.
+            - `STOPPING` (3): The agent is stopping.
+            - `STOPPED` (4): The agent has exited.
+            - `FAILED` (6): The agent failed to execute.
+          schema:
+            type: string
+            default: '2'
+            enum:
+              - '0'
+              - '1'
+              - '2'
+              - '3'
+              - '4'
+              - '5'
+              - '6'
+        - name: limit
+          in: query
+          required: false
+          description: The maximum number of entries returned per page.
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          required: false
+          description: The paging cursor, indicating the starting position (`agent_id`) of the next page of results.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: Agent data.
+                    properties:
+                      count:
+                        type: integer
+                        description: The number of agents returned.
+                      list:
+                        type: array
+                        description: A list of agents that meets the criteria.
+                        items:
+                          type: object
+                          properties:
+                            start_ts:
+                              type: integer
+                              description: Agent creation timestamp.
+                            status:
+                              type: string
+                              enum:
+                                - IDLE
+                                - STARTING
+                                - RUNNING
+                                - STOPPING
+                                - STOPPED
+                                - FAILED
+                              description: The current state of the agent.
+                            agent_id:
+                              type: string
+                              description: The agent ID.
+                  meta:
+                    type: object
+                    description: Returns meta information about the list.
+                    properties:
+                      cursor:
+                        type: string
+                        description: Paging cursor.
+                      total:
+                        type: integer
+                        description: The total number of agents that meet the query conditions.
+                  status:
+                    type: string
+                    description: Request status.
+              examples:
+                Success:
+                  value:
+                    data:
+                      count: 1
+                      list:
+                        - start_ts: 1735035893
+                          status: RUNNING
+                          agent_id: 1234567890ABCDE1CVGZNU80BEIN56XF
+                    meta:
+                      cursor: ''
+                      total: 1
+                    status: ok
+        default:
+          description: Request failed. The response body includes the `detail` and `reason` for failure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+
+  /v2/projects/{appid}/agents/{agentId}:
+    get:
+      tags:
+        - Agent Management
+      summary: Query agent status
+      description: Get the current state information of the specified agent instance.
+      operationId: query-agent-status
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Request message.
+                  start_ts:
+                    type: integer
+                    description: Agent creation timestamp.
+                  stop_ts:
+                    type: integer
+                    description: Agent stop timestamp.
+                  status:
+                    type: string
+                    enum:
+                      - IDLE
+                      - STARTING
+                      - RUNNING
+                      - STOPPING
+                      - STOPPED
+                      - FAILED
+                    description: |-
+                      Current status:
+                      - `IDLE` (0): Agent is idle.
+                      - `STARTING` (1): The agent is being started.
+                      - `RUNNING` (2): The agent is running.
+                      - `STOPPING` (3): The agent is stopping.
+                      - `STOPPED` (4): The agent has exited.
+                      - `FAILED` (6): The agent failed to execute.
+                  agent_id:
+                    type: string
+                    description: Unique id of the agent instance
+              examples:
+                Success:
+                  value:
+                    message: 'agent exits with reason: xxxx'
+                    start_ts: 1735035893
+                    stop_ts: 1735035900
+                    status: FAILED
+                    agent_id: 1NT29X11GQSxxxxxNU80BEIN56XF
+        default:
+          description: Request failed. The response body includes the `detail` and `reason` for failure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+
+  /v2/projects/{appid}/agents/{agentId}/history:
+    get:
+      tags:
+        - Agent Management
+      summary: Retrieve agent history
+      description: |-
+        Get the history of the conversation between the user and the agent.
+        
+        Call this endpoint while the agent is running to retrieve the conversation history. You can set the maximum number of cached entries using the `llm.max_history` parameter when calling the start agent endpoint. The default value is `32`.
+      operationId: get-agent-history
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                    description: Unique identifier of the agent.
+                  start_ts:
+                    type: integer
+                    description: Agent creation timestamp.
+                  status:
+                    type: string
+                    enum:
+                      - RUNNING
+                    description: Agent status. Only supports querying the running agent.
+                  contents:
+                    type: array
+                    description: Agent history.
+                    items:
+                      type: object
+                      properties:
+                        role:
+                          type: string
+                          enum:
+                            - user
+                            - assistant
+                          description: |-
+                            The message sender:
+                            - `user`: User
+                            - `assistant`: AI agent
+                        content:
+                          type: string
+                          description: Message content.
+              examples:
+                Success:
+                  value:
+                    agent_id: xxxx
+                    start_ts: 123
+                    status: RUNNING
+                    contents:
+                      - role: user
+                        content: hello.
+                      - role: assistant
+                        content: hi, how can I help you?
+        default:
+          description: Request failed. The response body includes the error code and description.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+
+  /v2/projects/{appid}/agents/{agentId}/turns:
+    get:
+      tags:
+        - Agent Management
+      summary: Query conversation turn information
+      description: |-
+        Query conversation turn information for a conversational AI agent session.
+
+        After a conversation with the agent ends, use this endpoint to query the conversation turn information, including the start information, end information, and performance metrics of each conversation turn.
+
+        You can query sessions within the last 7 days.
+      operationId: get-agent-turns
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - $ref: '#/components/parameters/agentId'
+        - name: page_index
+          in: query
+          required: false
+          description: The page number. Starts from 1.
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          required: false
+          description: The number of dialogue turns returned per page.
+          schema:
+            type: integer
+            default: 50
+            minimum: 10
+            maximum: 200
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                    description: The unique identifier of the agent.
+                  name:
+                    type: string
+                    description: The name of the agent.
+                  channel:
+                    type: string
+                    description: The name of the RTC channel the agent joined.
+                  total_turn_count:
+                    type: integer
+                    description: The total number of dialogue turns in the current session.
+                  pagination:
+                    type: object
+                    description: Pagination information.
+                    properties:
+                      page_index:
+                        type: integer
+                        description: The current page number; starts from 1.
+                      total_pages:
+                        type: integer
+                        description: The total number of pages.
+                      is_last_page:
+                        type: boolean
+                        description: True if the current page is the last page.
+                  turns:
+                    type: array
+                    description: A list of conversation turns for the agent session.
+                    items:
+                      type: object
+                      properties:
+                        agent_id:
+                          type: string
+                          description: The unique identifier of the agent.
+                        channel:
+                          type: string
+                          description: The name of the RTC channel the agent joined.
+                        turn_id:
+                          type: number
+                          description: The sequential index of the turn within the session. Starts at `1`.
+                        start:
+                          type: object
+                          description: Details about the start of the turn.
+                          properties:
+                            start_at:
+                              type: number
+                              description: The Unix timestamp in milliseconds (UTC time) when the turn started.
+                            type:
+                              type: string
+                              enum:
+                                - voice_input
+                                - greeting
+                                - silence_timeout
+                                - api_speak
+                              description: |-
+                                The type of event that initiated the turn.
+                                - `voice_input`: The turn was initiated by user voice input.
+                                - `greeting`: The turn was initiated by an agent greeting.
+                                - `silence_timeout`: The turn was initiated due to a silence timeout.
+                                - `api_speak`: The turn was initiated by a call to the speak API.
+                            metadata:
+                              type: object
+                              description: Additional context about the turn start event. Included fields depend on the value of the `type` field.
+                              properties:
+                                speech_duration_ms:
+                                  type: integer
+                                  description: The duration of the user's voice input in milliseconds. Included only when `type` is `voice_input`.
+                                interrupt_duration_ms:
+                                  type: integer
+                                  description: The minimum voice duration in milliseconds required to trigger an interruption. Included only when `type` is `voice_input`.
+                                greeting_nth:
+                                  type: integer
+                                  description: The index of the current greeting occurrence. Included only when `type` is `greeting`.
+                                action:
+                                  type: string
+                                  description: |-
+                                    The action taken in response to the silence timeout. Included only when `type` is `silence_timeout`.
+                                    - `speak`: Plays the silence prompt message to the user.
+                                    - `think`: Appends the silence message to the conversation context and passes it to the LLM.
+                                transport:
+                                  type: string
+                                  description: |-
+                                    The transport protocol used to deliver the speak request. Included only when `type` is `api_speak`.
+                                    - `http`: Delivered over HTTP.
+                                    - `rtm`: Delivered through the RTM Presence channel.
+                        end:
+                          type: object
+                          description: Details about the end of the turn.
+                          properties:
+                            end_at:
+                              type: number
+                              description: The Unix timestamp in milliseconds (UTC time) when the turn ended.
+                            type:
+                              type: string
+                              enum:
+                                - ok
+                                - interrupted
+                                - ignored
+                                - error
+                              description: |-
+                                The type of event that ended the turn.
+                                - `ok`: The turn ended normally.
+                                - `interrupted`: The turn was interrupted.
+                                - `ignored`: The turn was ignored.
+                                - `error`: The turn ended due to an error.
+                            metadata:
+                              type: object
+                              description: Additional context about the turn end event. Included fields depend on the value of the `type` field.
+                              properties:
+                                playback_duration_ms:
+                                  type: integer
+                                  description: The audio playback duration in milliseconds. Included only when `type` is `ok`.
+                                caused_by:
+                                  type: string
+                                  description: |-
+                                    The cause of the turn ending.
+
+                                    When `type` is `interrupted`, possible values are:
+                                    - `start_of_speech`: A new voice input interrupted the turn.
+                                    - `api_speak`: The turn was interrupted by a call to the speak API.
+                                    - `api_interrupt`: The turn was interrupted by a call to the interrupt API.
+                                    - `api_leave`: The turn was interrupted because the agent left the channel.
+
+                                    When `type` is `ignored`, possible values are:
+                                    - `semantic`: The turn was ignored because semantic end-of-speech detection determined no response was required. Applies when `turn_detection.config.end_of_speech.mode` is set to `semantic`.
+                                    - `keywords`: The turn was ignored because the start keyword was not detected. Applies when `turn_detection.config.start_of_speech.mode` is set to `keywords`.
+                                    - `disable`: The turn was ignored because interruption is disabled for this turn.
+                                transport:
+                                  type: string
+                                  description: |-
+                                    The transport protocol used to deliver the request. Included only when `caused_by` is `api_speak` or `api_interrupt`.
+                                    - `http`: Delivered over HTTP.
+                                    - `rtm`: Delivered through the RTM Presence channel.
+                                reason:
+                                  type: string
+                                  description: |-
+                                    The error type. Included only when `type` is `error`.
+                                    - `LLM_REQUEST_ERR`: LLM request error.
+                                    - `INTERNAL_ERR`: Internal error.
+                                details:
+                                  type: string
+                                  description: Additional error details. Included only when `type` is `error`.
+                        metrics:
+                          type: object
+                          description: Latency metrics for the turn.
+                          properties:
+                            e2e_latency_ms:
+                              type: integer
+                              description: The end-to-end latency in milliseconds for the turn.
+                            segmented_latency_ms:
+                              type: array
+                              description: A breakdown of latency by segment.
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                    description: |-
+                                      The name of the latency segment.
+
+                                      When the LLM input modality is `text`, the returned segments are:
+                                      - `algorithm_processing`: Algorithm processing delay.
+                                      - `asr_ttlw`: The ASR Time To Last Word (TTLW) in milliseconds. Represents the delay from when the user finishes speaking to when the ASR module outputs the last word.
+                                      - `llm_ttft`: The LLM Time To First Token (TTFT) in milliseconds. Represents the delay from when the user finishes speaking to when the LLM outputs the first token.
+                                      - `llm_ftfs`: The LLM First Token To First Sentence (FTFS) in milliseconds. Represents the delay from when the LLM outputs the first token to when it outputs the first complete sentence.
+                                      - `tts_ttfb`: The TTS Time To First Byte (TTFB) in milliseconds. Represents the delay from when the TTS module receives a text request to when it outputs the first audio byte.
+                                      - `transport`: Network transmission delay in milliseconds. Not returned when the user is connected using the RTC Web SDK.
+
+                                      When the LLM input modality is `audio`, the returned segments are:
+                                      - `algorithm_processing`: Algorithm processing delay.
+                                      - `asr_ttlw`: The ASR Time To Last Word (TTLW) in milliseconds. Represents the delay from when the user finishes speaking to when the ASR module outputs the last word.
+                                      - `llm_ttfa`: The LLM Time To First Audio Byte (TTFA) in milliseconds. Represents the delay from when the user finishes speaking to when the LLM outputs the first audio byte.
+                                      - `transport`: Network transmission delay in milliseconds. Not returned when the user is connected using the RTC Web SDK.
+                                  latency:
+                                    type: number
+                                    description: The latency in milliseconds for the segment.
+              examples:
+                Success:
+                  value:
+                    agent_id: 'A42Axxxxxxxxx37MT56J'
+                    name: 'support_agent_001'
+                    channel: 'test_channel'
+                    total_turn_count: 250
+                    pagination:
+                      page_index: 1
+                      total_pages: 5
+                      is_last_page: false
+                    turns:
+                      - agent_id: 'A42Axxxxxxxxx37MT56J'
+                        channel: 'test_channel'
+                        turn_id: 1
+                        start:
+                          start_at: 1774579820147
+                          type: greeting
+                          metadata:
+                            greeting_nth: 1
+                        end:
+                          end_at: 1774579822412
+                          type: interrupted
+                          metadata:
+                            caused_by: api_interrupt
+                            transport: rtm
+                        metrics:
+                          e2e_latency_ms: 337
+                          segmented_latency_ms:
+                            - name: tts_ttfb
+                              latency: 337
+        default:
+          description: Request failed. The response body includes the error code and description.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+
+  /v2/projects/{appid}/agents/{agentId}/leave:
+    post:
+      tags:
+        - Agent Management
+      summary: Stop a conversational AI agent
+      description: Stop the specified conversational agent instance.
+      operationId: stop-agent
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - $ref: '#/components/parameters/agentId'
+      responses:
+        '200':
+          description: Request was successful. The response body is empty.
+        default:
+          description: Request failed. The response body includes the error code and description.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+
+  /v2/projects/{appid}/agents/{agentId}/update:
+    post:
+      tags:
+        - Agent Management
+      summary: Update agent configuration
+      description: Adjust Conversation AI Engine parameters at runtime.
+      operationId: update-agent
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                properties:
+                  type: object
+                  description: Configuration properties to update.
+                  properties:
+                    token:
+                      type: string
+                      description: The authentication token used by the agent to join the channel.
+                    llm:
+                      type: object
+                      description: Large Language Model (LLM) settings.
+                      properties:
+                        system_messages:
+                          type: array
+                          description: A set of predefined messages appended to the beginning of each LLM request. These messages help control the LLM's output and can include role definitions, prompts, response examples, and more. This field must be compatible with the OpenAI protocol.
+                          items:
+                            type: object
+                            additionalProperties: true
+                        params:
+                          type: object
+                          description: Additional LLM information included in the message body, such as the model used, the maximum number of tokens, and more. Supported configurations vary by LLM provider. Refer to the provider's documentation for details. Updating this field overwrites the configuration set when the agent was created. When updating, make sure to pass the complete `params` field.
+                          additionalProperties: true
+                    mllm:
+                      type: object
+                      description: Multimodal Large Language Model (MLLM) configuration for real-time audio and text processing.
+                      properties:
+                        params:
+                          type: object
+                          description: Additional MLLM configuration parameters. See [MLLM Overview](https://docs.agora.io/en/conversational-ai/models/mllm/overview) for details.
+                          additionalProperties: true
+            examples:
+              Update LLM:
+                value:
+                  properties:
+                    token: 007eJxTYxxxxxxxxxxIaHMLAAAA0ex66
+                    llm:
+                      system_messages:
+                        - role: system
+                          content: You are a helpful assistant. xxx
+                        - role: system
+                          content: 'Previously, user has talked about their favorite hobbies with some key topics: xxx'
+                      params:
+                        model: abab6.5s-chat
+                        max_token: 1024
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                    description: Unique id of the agent instance
+                  create_ts:
+                    type: integer
+                    description: Timestamp of when the agent was created
+                  status:
+                    type: string
+                    enum:
+                      - IDLE
+                      - STARTING
+                      - RUNNING
+                      - STOPPING
+                      - STOPPED
+                      - FAILED
+                    description: |-
+                      Current status:
+                      - `IDLE` (0): Agent is idle.
+                      - `STARTING` (1): The agent is being started.
+                      - `RUNNING` (2): The agent is running.
+                      - `STOPPING` (3): The agent is stopping.
+                      - `STOPPED` (4): The agent has exited.
+                      - `FAILED` (6): The agent failed to execute.
+              examples:
+                Success:
+                  value:
+                    agent_id: 1NT29X10YHxxxxxWJOXLYHNYB
+                    create_ts: 1737123456
+                    status: RUNNING
+        default:
+          description: Request failed. The response body includes the `detail` and `reason` for failure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+
+  /v2/projects/{appid}/agents/{agentId}/speak:
+    post:
+      tags:
+        - Agent Management
+      summary: Broadcast a message using TTS
+      description: |-
+        Broadcast a custom message using the TTS module.
+        
+        During a conversation with an agent, call this endpoint to immediately broadcast a custom message using the TTS module. Upon receiving the request, the system interrupts the agent's speech and thought process to deliver the message. This broadcast can be interrupted by human voice.
+        
+        Note: The speak API is not supported when using `mllm` configuration.
+      operationId: agent-speak
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  maxLength: 512
+                  description: The broadcast message text. The maximum length of the text content is 512 bytes.
+                priority:
+                  type: string
+                  enum:
+                    - INTERRUPT
+                    - APPEND
+                    - IGNORE
+                  default: INTERRUPT
+                  description: |-
+                    Sets the priority of the message broadcast:
+                    - `INTERRUPT`: High priority. The agent immediately interrupts the current interaction to announce the message.
+                    - `APPEND`: Medium priority. The agent announces the message after the current interaction ends.
+                    - `IGNORE`: Low priority. If the agent is busy interacting, it ignores and discards the broadcast; the message is only announced if the agent is not interacting.
+                interruptable:
+                  type: boolean
+                  default: true
+                  description: |-
+                    Whether to allow users to interrupt the agent's broadcast by speaking:
+                    - `true`: Allow
+                    - `false`: Don't allow
+            examples:
+              Broadcast message:
+                value:
+                  text: Sorry, the conversation content is not compliant.
+                  priority: INTERRUPT
+                  interruptable: false
+      responses:
+        '200':
+          description: Request was successful. The agent starts to broadcast the specified message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                    description: Unique id of the agent instance
+                  channel:
+                    type: string
+                    description: The name of the channel
+                  start_ts:
+                    type: integer
+                    description: Timestamp when the broadcast started
+              examples:
+                Success:
+                  value:
+                    agent_id: '1NT29XxxxxxxxxELWEHC8OS'
+                    channel: 'test_channel'
+                    start_ts: 1744877089
+        default:
+          description: Request failed. The response body includes the error code and description.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+              examples:
+                Error:
+                  value:
+                    detail: 'Agent not found or not in correct state'
+                    reason: 'invalid_agent_state'
+
+  /v2/projects/{appid}/agents/{agentId}/think:
+    post:
+      tags:
+        - Agent Management
+      summary: Send a custom instruction
+      description: |-
+        Send a custom text instruction to the specified conversational AI agent instance.
+
+        The instruction is injected into the current conversation pipeline as user input, and the agent processes and responds to it following the standard user input logic.
+
+        Use this endpoint for the following scenarios:
+        - **Implicit instruction injection**: Inject hidden context or directives into the conversation.
+        - **Client-side event triggering**: Notify the agent of client-side events, such as a user clicking a button.
+        - **Voice and text collaboration**: Combine text instructions with voice input for richer interaction.
+      operationId: agent-think
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  description: The custom instruction text to inject into the current conversation pipeline. The system processes this as user input.
+                on_listening_action:
+                  type: string
+                  default: interrupt
+                  enum:
+                    - inject
+                    - interrupt
+                    - ignore
+                  description: |-
+                    The action to take when the agent is in a listening state:
+                    - `inject`: Inject the custom text instruction into the current turn without interrupting it.
+                    - `interrupt`: Immediately interrupt the current flow and initiate a new round of dialogue.
+                    - `ignore`: Ignore the request.
+                on_thinking_action:
+                  type: string
+                  default: interrupt
+                  enum:
+                    - interrupt
+                    - ignore
+                  description: |-
+                    The action to take when the agent is in a thinking state:
+                    - `interrupt`: Interrupt the current state and start a new conversation turn.
+                    - `ignore`: Ignore the request.
+                on_speaking_action:
+                  type: string
+                  default: ignore
+                  enum:
+                    - interrupt
+                    - ignore
+                  description: |-
+                    The action to take when the agent is in a speaking state:
+                    - `interrupt`: Interrupt the current state and start a new conversation turn.
+                    - `ignore`: Ignore the request.
+                interruptable:
+                  type: boolean
+                  default: true
+                  description: |-
+                    Whether user speech can interrupt the injected instruction:
+                    - `true`: User speech can interrupt the instruction.
+                    - `false`: User speech cannot interrupt the instruction.
+                metadata:
+                  type: object
+                  description: Custom metadata in key-value pair format. Use this field to pass additional business information such as identifiers or model references.
+                  additionalProperties:
+                    type: string
+            examples:
+              Inject instruction:
+                value:
+                  text: The user just clicked the purchase button.
+                  on_listening_action: inject
+                  on_thinking_action: interrupt
+                  on_speaking_action: ignore
+                  interruptable: true
+                  metadata:
+                    publisher: user123
+                    model: deepseek-r1
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                    description: Unique identifier of the agent instance.
+                  channel:
+                    type: string
+                    description: The name of the RTC channel where the agent is located.
+                  start_ts:
+                    type: integer
+                    description: Timestamp indicating when the agent was created.
+              examples:
+                Success:
+                  value:
+                    agent_id: '1NT29XxxxxxxxxELWEHC8OS'
+                    channel: 'test_channel'
+                    start_ts: 1744877089
+        default:
+          description: Request failed. The response body includes the `detail` and `reason` for failure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error detail message
+                  reason:
+                    type: string
+                    description: Error reason code
+
+  /v2/projects/{appid}/agents/{agentId}/interrupt:
+    post:
+      tags:
+        - Agent Management
+      summary: Interrupt the agent
+      description: Interrupt the specified agent while speaking or thinking.
+      operationId: agent-interrupt
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - $ref: '#/components/parameters/agentId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              Empty body:
+                value: {}
+      responses:
+        '200':
+          description: Request was successful. The response body contains agent information and the agent stops talking and thinking immediately.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                    description: Unique id of the agent instance
+                  channel:
+                    type: string
+                    description: The name of the channel
+                  start_ts:
+                    type: integer
+                    description: Timestamp when the broadcast started
+              examples:
+                Success:
+                  value:
+                    agent_id: '1NT29XxxxxxxxxELWEHC8OS'
+                    channel: 'test_channel'
+                    start_ts: 1744877089
+
+  /v2/projects/{appid}/call:
+    post:
+      tags:
+        - Telephony
+      summary: Initiate an outbound call
+      description: |-
+        Initiate an outbound call to a specified number and create an agent to join the specified RTC channel.
+        
+        Use this endpoint to initiate an outbound call to the specified number and create an agent that joins the target RTC channel. The agent waits for the callee to answer.
+      operationId: initiate-outbound-call
+      parameters:
+        - $ref: '#/components/parameters/appid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - sip
+                - properties
+              properties:
+                name:
+                  type: string
+                  description: The name identifier of the call session.
+                sip:
+                  type: object
+                  required:
+                    - to_number
+                    - from_number
+                    - rtc_uid
+                    - rtc_token
+                  description: SIP (Session Initiation Protocol) call configuration object.
+                  properties:
+                    to_number:
+                      type: string
+                      description: Called number (target phone number), in E.164 format.
+                    from_number:
+                      type: string
+                      description: Caller ID (the number that initiated the call), in E.164 format.
+                    rtc_uid:
+                      type: string
+                      description: The RTC UID used by the SIP gateway.
+                    rtc_token:
+                      type: string
+                      description: The RTC token used by the SIP gateway.
+                pipeline_id:
+                  type: string
+                  description: The unique ID of a published project in AI Studio.
+                properties:
+                  type: object
+                  required:
+                    - channel
+                    - token
+                    - agent_rtc_uid
+                  description: |-
+                    Call attribute configuration. The content of this field varies depending on the invocation method:
+                    - **Using pipeline ID**: Simply pass in `channel`, `token`, `agent_rtc_uid`, and `remote_rtc_uids`.
+                    - **Using complete configuration**: Pass in the complete parameters of the [Start a conversational AI agent](https://docs.agora.io/en/conversational-ai/rest-api/agent/join) `properties`, including all required fields such as `channel`, `token`, `agent_rtc_uid`, `remote_rtc_uids`, `tts`, and `llm`.
+                  properties:
+                    channel:
+                      type: string
+                      description: RTC channel name.
+                    token:
+                      type: string
+                      description: RTC Channel Token.
+                    agent_rtc_uid:
+                      type: string
+                      description: The agent's user ID in the RTC channel.
+                    remote_rtc_uids:
+                      type: array
+                      description: A list of RTC user IDs. When using pipeline ID, this should contain the SIP gateway UID.
+                      items:
+                        type: string
+                  additionalProperties: true
+            examples:
+              Pipeline ID:
+                value:
+                  name: customer_service
+                  sip:
+                    to_number: '+19876543210'
+                    from_number: '+11234567890'
+                    rtc_uid: '100'
+                    rtc_token: '<agora_sip_rtc_token>'
+                  pipeline_id: fzufjlweixxxxnlp
+                  properties:
+                    channel: '<agora_channel>'
+                    token: '<agora_channel_token>'
+                    agent_rtc_uid: '111'
+                    remote_rtc_uids:
+                      - '100'
+              Full configuration:
+                value:
+                  name: customer_service
+                  sip:
+                    to_number: '+19876543210'
+                    from_number: '+11234567890'
+                    rtc_uid: '100'
+                    rtc_token: '<agora_sip_rtc_token>'
+                  properties:
+                    channel: '<agora_channel>'
+                    token: '<agora_channel_token>'
+                    agent_rtc_uid: '111'
+                    remote_rtc_uids:
+                      - '100'
+                    idle_timeout: 120
+                    llm:
+                      url: 'https://api.openai.com/v1/chat/completions'
+                      api_key: '<your_llm_key>'
+                      system_messages:
+                        - role: system
+                          content: You are a helpful chatbot.
+                      max_history: 32
+                      greeting_message: Hello, how can I assist you today?
+                      failure_message: Please hold on a second.
+                      params:
+                        model: gpt-4o-mini
+                    tts:
+                      vendor: microsoft
+                      params:
+                        key: '<your_tts_api_key>'
+                        region: eastus
+                        voice_name: en-US-AndrewMultilingualNeural
+                    asr:
+                      language: en-US
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent_id:
+                    type: string
+                    description: Unique ID of the agent instance. Use it to query call status, control call flow, and perform other operations.
+              examples:
+                Success:
+                  value:
+                    agent_id: A42AK62PExxxxxxxx74LN47MF46E
+        default:
+          description: |- 
+            Request failed. The response body includes the error code and description.
+            
+            **Common error codes:**
+            - `400` `invalid_phone_format`:  Invalid phone number format (not in E.164 format).
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `500` `internal_server_error`: Internal server error. 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    description: The type of error that occurred.
+                  description:
+                    type: string
+                    description: A detailed description of the error.
+              examples:
+                Error:
+                  value:
+                    error_type: invalid_phone_format
+                    description: Invalid phone number format (not E.164 format).
+
+    get:
+      tags:
+        - Telephony
+      summary: Retrieve call records
+      description: Query historical call records for a specified appid based on the filter criteria.
+      operationId: retrieve-call-records
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - name: number
+          in: query
+          required: false
+          description: Filter by phone number. Can be either the calling number or the called number.
+          schema:
+            type: string
+        - name: from_time
+          in: query
+          required: false
+          description: Query list start timestamp (in seconds). Default is 60 days ago.
+          schema:
+            type: integer
+        - name: to_time
+          in: query
+          required: false
+          description: Query list end timestamp (in seconds). Default is current time.
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: false
+          description: |-
+            Call type filter:
+            - `inbound`: Inbound call.
+            - `outbound`: Outbound call.
+            
+            If not specified, all call types are returned.
+          schema:
+            type: string
+            enum:
+              - inbound
+              - outbound
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of items returned in a single page.
+          schema:
+            type: integer
+            default: 20
+        - name: cursor
+          in: query
+          required: false
+          description: Pagination cursor. Use the `agent_id` from the previous page as the cursor for the next page.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: Call data object.
+                    properties:
+                      count:
+                        type: integer
+                        description: The number of calls returned in this response.
+                      list:
+                        type: array
+                        description: A list of calls that meet the criteria.
+                        items:
+                          type: object
+                          properties:
+                            to_number:
+                              type: string
+                              description: The number called.
+                            from_number:
+                              type: string
+                              description: Caller ID.
+                            pipeline_id:
+                              type: string
+                              description: The unique ID of a published project in AI Studio. Can be obtained in AI Studio - Project - Release Management.
+                            type:
+                              type: string
+                              enum:
+                                - inbound
+                                - outbound
+                              description: |-
+                                Call type:
+                                - `inbound`: Inbound call.
+                                - `outbound`: Outbound call.
+                            agent_id:
+                              type: string
+                              description: A unique identifier for the call session.
+                            channel:
+                              type: string
+                              description: RTC channel name.
+                            create_ts:
+                              type: integer
+                              description: Call creation timestamp (in seconds).
+                            state:
+                              type: string
+                              enum:
+                                - answered
+                                - hangup
+                              description: |-
+                                Call status:
+                                - `answered`: The call was answered.
+                                - `hangup`: The call was disconnected.
+                            stop_ts:
+                              type: integer
+                              nullable: true
+                              description: Call end timestamp (in seconds). Returns `0` or `null` if the call has not ended.
+                  meta:
+                    type: object
+                    description: Metadata about the list.
+                    properties:
+                      cursor:
+                        type: string
+                        description: Pagination cursor for the next page.
+                      total:
+                        type: integer
+                        description: The total number of calls that meet the query criteria.
+                  status:
+                    type: string
+                    description: Request status.
+              examples:
+                Success:
+                  value:
+                    data:
+                      count: 1
+                      list:
+                        - to_number: '2222'
+                          from_number: '111'
+                          pipeline_id: '28'
+                          type: inbound
+                          agent_id: A42AA22ATxxxxx4RH76AM92W
+                          channel: channel_1111
+                          create_ts: 1758498988
+                          state: answered
+                          stop_ts: null
+                    meta:
+                      cursor: A42AA22AT45LDxxxxxH76AM92W
+                      total: 1
+                    status: ok
+        default:
+          description: |- 
+            Request failed. The response body includes the error code and description.
+
+            **Common error codes:**
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `422` `unprocessable_content`: Request format error or parameter validation failed.
+            - `500` `internal_server_error`: Internal server error.            
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    description: The type of error that occurred.
+                  description:
+                    type: string
+                    description: A detailed description of the error.
+              examples:
+                Error:
+                  value:
+                    error_type: unauthorized
+                    description: Authentication failed. Please check your credentials.
+
+  /v2/projects/{appid}/calls/{agent_id}:
+    get:
+      tags:
+        - Telephony
+      summary: Retrieve call status
+      description: Retrieve the call status and related information of a specified agent.
+      operationId: retrieve-call-status
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - name: agent_id
+          in: path
+          description: The agent ID you obtained after successfully calling the API to initiate an outbound call.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  to_number:
+                    type: string
+                    description: The number called.
+                  from_number:
+                    type: string
+                    description: Caller ID.
+                  pipeline_id:
+                    type: string
+                    description: The unique ID of a published project in AI Studio. Can be obtained in AI Studio - Project - Release Management.
+                  type:
+                    type: string
+                    enum:
+                      - inbound
+                      - outbound
+                    description: |-
+                      Call type:
+                      - `inbound`: Inbound call.
+                      - `outbound`: Outbound call.
+                  agent_id:
+                    type: string
+                    description: A unique identifier for the call session.
+                  channel:
+                    type: string
+                    description: RTC channel name.
+                  reason:
+                    type: string
+                    enum:
+                      - request
+                      - hangup
+                      - failed
+                    description: |-
+                      Reason for call ending:
+                      - `request`: Actively hung up.
+                      - `hangup`: The other party hung up.
+                      - `failed`: Call failed.
+                  create_ts:
+                    type: integer
+                    description: Call creation timestamp (in seconds).
+                  state:
+                    type: string
+                    enum:
+                      - answered
+                      - hangup
+                    description: |-
+                      Call status:
+                      - `answered`: The call was answered.
+                      - `hangup`: The call was disconnected.
+                  stop_ts:
+                    type: integer
+                    nullable: true
+                    description: Call end timestamp (in seconds). Returns `0` or `null` if the call has not ended.
+              examples:
+                Success:
+                  value:
+                    to_number: '1300000000'
+                    from_number: '1330000000'
+                    pipeline_id: '28'
+                    type: inbound
+                    agent_id: A42AA22AT45xxxxxxRH76AM92W
+                    channel: channel_1111
+                    reason: request
+                    create_ts: 1758498988
+                    state: hangup
+                    stop_ts: 1758498995
+        default:
+          description: |- 
+            Request failed. The response body includes the error code and description.
+            
+            **Common error codes:**
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `404` `not_found`: The specified call session was not found.
+            - `500` `internal_server_error`: Internal server error.            
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    description: The type of error that occurred.
+                  description:
+                    type: string
+                    description: A detailed description of the error.
+              examples:
+                Error:
+                  value:
+                    error_type: not_found
+                    description: The specified call session was not found.
+
+  /v2/projects/{appid}/calls/{agent_id}/hangup:
+    post:
+      tags:
+        - Telephony
+      summary: Hang-up a call
+      description: Instruct the agent to proactively hang up the ongoing call and leave the RTC channel.
+      operationId: hangup-call
+      parameters:
+        - $ref: '#/components/parameters/appid'
+        - name: agent_id
+          in: path
+          description: The agent ID you obtained after successfully calling the API to initiate an outbound call.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              Empty body:
+                value: {}
+      responses:
+        '200':
+          description: Request was successful. The response body is empty.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+              examples:
+                Success:
+                  value: {}
+        default:
+          description: |-
+            Request failed. The response body includes the error code and description.
+            
+            **Common error codes:**
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `404` `not_found`: The specified call session was not found.
+            - `500` `internal_server_error`: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    description: The type of error that occurred.
+                  description:
+                    type: string
+                    description: A detailed description of the error.
+              examples:
+                Error:
+                  value:
+                    error_type: not_found
+                    description: The specified call session was not found.
+
+  /v2/phone-numbers:
+    get:
+      tags:
+        - Phone Number Management
+      summary: Retrieve number list
+      description: Retrieve a list of all imported phone numbers under the current account.
+      operationId: retrieve-number-list
+      responses:
+        '200':
+          description: Request was successful. The response body contains a JSON array of phone number configurations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    provider:
+                      type: string
+                      enum:
+                        - byo
+                        - twilio
+                      description: |-
+                        Number provider:
+                        - `byo`: BYO (Bring Your Own).
+                        - `twilio`: Twilio.
+                    phone_number:
+                      type: string
+                      description: A telephone number in E.164 format, used as a unique identifier.
+                    label:
+                      type: string
+                      description: A label used to identify the number.
+                    inbound:
+                      type: boolean
+                      description: Whether the number supports inbound calls.
+                    outbound:
+                      type: boolean
+                      description: Whether the number supports outbound calls.
+                    associated_pipeline:
+                      type: object
+                      nullable: true
+                      description: The associated pipeline information. Returns `null` if no pipeline is associated.
+                      properties:
+                        pipeline_id:
+                          type: string
+                          description: Pipeline ID.
+                        pipeline_name:
+                          type: string
+                          description: Pipeline name.
+                    inbound_config:
+                      type: object
+                      nullable: true
+                      description: SIP inbound call configuration details. Returns `null` if not configured.
+                      additionalProperties: true
+                    outbound_config:
+                      type: object
+                      nullable: true
+                      description: SIP outbound call configuration details. Returns `null` if not configured.
+                      additionalProperties: true
+              examples:
+                Success:
+                  value:
+                    - provider: twilio
+                      phone_number: '+11234567890'
+                      label: Customer Support Line
+                      inbound: true
+                      outbound: true
+                      associated_pipeline:
+                        pipeline_id: pipeline_0987654321fedcba
+                        pipeline_name: Customer Service
+                    - provider: byo
+                      phone_number: '+19876543210'
+                      label: Sales
+                      inbound: false
+                      outbound: true
+                      associated_pipeline: null
+                      inbound_config: {}
+                      outbound_config: {}
+        default:
+          description: |- 
+            Request failed. The response body includes the error code and description.
+
+            **Common error codes:**
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `404` `not_found`: The specified phone number was not found.
+            - `409` `phone_number_exists`: Phone number already exists, duplicate import not allowed.
+            - `409` `conflict`: Concurrent modification conflict or resource locked.
+            - `422` `unprocessable_content`: Request format error or parameter validation failed.
+            - `500` `internal_server_error`: Internal server error. 
+          
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    description: The type of error that occurred.
+                  description:
+                    type: string
+                    description: A detailed description of the error.
+              examples:
+                Error:
+                  value:
+                    error_type: unauthorized
+                    description: Authentication failed. Please check your credentials.
+
+    post:
+      tags:
+        - Phone Number Management
+      summary: Import number
+      description: Import a pre-configured phone number that can be used for inbound or outbound calls.
+      operationId: import-number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - provider
+                - phone_number
+                - label
+                - inbound_config
+                - outbound_config
+              properties:
+                provider:
+                  type: string
+                  enum:
+                    - byo
+                    - twilio
+                  description: |-
+                    Number provider:
+                    - `byo`: BYO (Bring Your Own)
+                    - `twilio`: Twilio
+                phone_number:
+                  type: string
+                  description: Telephone number in E.164 format.
+                label:
+                  type: string
+                  description: A label used to identify the number.
+                inbound:
+                  type: boolean
+                  default: true
+                  description: Whether the number supports inbound calls.
+                outbound:
+                  type: boolean
+                  default: true
+                  description: Whether the number supports outbound calls.
+                inbound_config:
+                  type: object
+                  description: SIP inbound call configuration.
+                  properties:
+                    allowed_addresses:
+                      type: array
+                      description: List of allowed IP addresses. For example `112.126.15.64/27`
+                      items:
+                        type: string
+                outbound_config:
+                  type: object
+                  description: SIP outbound call configuration.
+                  properties:
+                    address:
+                      type: string
+                      description: SIP address. For example `xxx:xxx@sip.example.com`
+                    transport:
+                      type: string
+                      description: Transport protocol. For example `tls`
+                    prefix:
+                      type: string
+                      description: Number prefix. For example `6036`
+            examples:
+              Import BYO number:
+                value:
+                  provider: byo
+                  phone_number: '+19876543210'
+                  label: Sales Hotline
+                  inbound: true
+                  outbound: true
+                  inbound_config:
+                    allowed_addresses:
+                      - '112.126.15.64/27'
+                  outbound_config:
+                    address: xxx:xxx@sip.example.com
+                    transport: tls
+      responses:
+        '201':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phone_number:
+                    type: string
+                    description: A telephone number in E.164 format, used as a unique identifier.
+                  label:
+                    type: string
+                    description: A label used to identify the number.
+                  provider:
+                    type: string
+                    description: Number provider.
+                  inbound:
+                    type: boolean
+                    description: Whether the number supports inbound calls.
+                  outbound:
+                    type: boolean
+                    description: Whether the number supports outbound calls.
+                  associated_pipeline:
+                    type: object
+                    nullable: true
+                    description: The associated pipeline information. Returns `null` if no pipeline is associated.
+                    properties:
+                      pipeline_id:
+                        type: string
+                        description: Pipeline ID.
+                      pipeline_name:
+                        type: string
+                        description: Pipeline name.
+              examples:
+                Not bound to pipeline:
+                  value:
+                    phone_number: '+11234567890'
+                    label: Customer Support Line
+                    provider: byo
+                    inbound: true
+                    outbound: true
+                    associated_pipeline: null
+                Bound to pipeline:
+                  value:
+                    phone_number: '+11234567890'
+                    label: Customer Support Line
+                    provider: byo
+                    inbound: true
+                    outbound: true
+                    associated_pipeline:
+                      pipeline_id: agent_0987654321fedcba
+                      pipeline_name: Support Bot
+        default:
+          description: |- 
+            Request failed. The response body includes the error code and description.
+
+            **Common error codes:**
+            - `400` `invalid_phone_format`: Invalid phone number format (not in E.164 format).
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `409` `phone_number_exists`: Phone number already exists, duplicate import not allowed.
+            - `422` `unprocessable_content`: Request format error or parameter validation failed.
+            - `500` `internal_server_error`: Internal server error.             
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: The type of error that occurred.
+                  reason:
+                    type: string
+                    description: The reason for the error.
+              examples:
+                Error:
+                  value:
+                    detail: Invalid phone number format (not E.164 format).
+                    reason: invalid_phone_format
+
+  /v2/phone-numbers/{phone_number}:
+    get:
+      tags:
+        - Phone Number Management
+      summary: Retrieve number information
+      description: Retrieve detailed information for a specific phone number.
+      operationId: retrieve-number-information
+      parameters:
+        - name: phone_number
+          in: path
+          description: Telephone number in E.164 format. For example, +11234567890.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider:
+                    type: string
+                    enum:
+                      - byo
+                      - twilio
+                    description: |-
+                      Number provider:
+                      - `byo`: BYO (Bring Your Own)
+                      - `twilio`: Twilio
+                  phone_number:
+                    type: string
+                    description: A telephone number in E.164 format, used as a unique identifier.
+                  label:
+                    type: string
+                    description: A label used to identify the number.
+                  inbound:
+                    type: boolean
+                    description: Whether the number supports inbound calls.
+                  outbound:
+                    type: boolean
+                    description: Whether the number supports outbound calls.
+                  associated_pipeline:
+                    type: object
+                    nullable: true
+                    description: The associated pipeline information. Returns `null` if no pipeline is associated.
+                    properties:
+                      pipeline_id:
+                        type: string
+                        description: Pipeline ID.
+                      pipeline_name:
+                        type: string
+                        description: Pipeline name.
+                  inbound_config:
+                    type: object
+                    nullable: true
+                    description: SIP inbound call configuration details. Returns `null` if not configured.
+                    additionalProperties: true
+                  outbound_config:
+                    type: object
+                    nullable: true
+                    description: SIP outbound call configuration details. Returns `null` if not configured.
+                    additionalProperties: true
+              examples:
+                Success:
+                  value:
+                    provider: byo
+                    phone_number: '+11234567890'
+                    label: Customer Support Line
+                    inbound: true
+                    outbound: true
+                    associated_agent:
+                      agent_id: agent_0987654321fedcba
+                      agent_name: Support Bot
+        default:
+          description: |- 
+            Request failed. The response body includes the error code and description.
+
+            **Common error codes:**
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `404` `not_found`: The specified phone number was not found.
+            - `409` `phone_number_exists`: Phone number already exists, duplicate import not allowed.
+            - `409` `conflict`: Concurrent modification conflict or resource locked.
+            - `422` `unprocessable_content`: Request format error or parameter validation failed.
+            - `500` `internal_server_error`: Internal server error.             
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    description: The type of error that occurred.
+                  description:
+                    type: string
+                    description: A detailed description of the error.
+              examples:
+                Error:
+                  value:
+                    error_type: unauthorized
+                    description: Authentication failed. Please check your credentials.
+
+    patch:
+      tags:
+        - Phone Number Management
+      summary: Update number configuration
+      description: Update the configuration for a phone number.
+      operationId: update-number-configuration
+      parameters:
+        - name: phone_number
+          in: path
+          description: Telephone number in E.164 format. For example, +11234567890.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inbound_config:
+                  type: object
+                  nullable: true
+                  description: Update inbound call configuration. Passing `null` will clear the configuration.
+                  properties:
+                    pipeline_id:
+                      type: string
+                      description: Pipeline ID.
+                outbound_config:
+                  type: object
+                  nullable: true
+                  description: Update outbound call configuration. Passing `null` will clear the configuration.
+                  properties:
+                    pipeline_id:
+                      type: string
+                      description: Pipeline ID.
+            examples:
+              Update configuration:
+                value:
+                  inbound_config:
+                    pipeline_id: xxxxx
+                  outbound_config:
+                    pipeline_id: xxxxx
+      responses:
+        '200':
+          description: Request was successful. The response body contains the result of the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider:
+                    type: string
+                    enum:
+                      - byo
+                      - twilio
+                    description: |-
+                      Number provider:
+                      - `byo`: BYO (Bring Your Own)
+                      - `twilio`: Twilio
+                  phone_number:
+                    type: string
+                    description: A telephone number in E.164 format, used as a unique identifier.
+                  label:
+                    type: string
+                    description: A label used to identify the number.
+                  inbound:
+                    type: boolean
+                    description: Whether the number supports inbound calls.
+                  outbound:
+                    type: boolean
+                    description: Whether the number supports outbound calls.
+                  associated_pipeline:
+                    type: object
+                    nullable: true
+                    description: The associated pipeline information. Returns `null` if no pipeline is associated.
+                    properties:
+                      pipeline_id:
+                        type: string
+                        description: Pipeline ID.
+                      pipeline_name:
+                        type: string
+                        description: Pipeline name.
+                  inbound_config:
+                    type: object
+                    nullable: true
+                    description: SIP inbound call configuration details. Returns `null` if not configured.
+                    additionalProperties: true
+                  outbound_config:
+                    type: object
+                    nullable: true
+                    description: SIP outbound call configuration details. Returns `null` if not configured.
+                    additionalProperties: true
+              examples:
+                Success:
+                  value:
+                    provider: byo
+                    phone_number: '+11234567890'
+                    label: Customer Support Line
+                    inbound: true
+                    outbound: true
+                    associated_pipeline:
+                      pipeline_id: pipeline_id_12345
+                      pipeline_name: New Support Bot
+        default:
+          description: |-
+            Request failed. The response body includes the error code and description.
+
+            **Common error codes:**
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `404` `not_found`: The specified phone number was not found.
+            - `409` `phone_number_exists`: Phone number already exists, duplicate import not allowed.
+            - `409` `conflict`: Concurrent modification conflict or resource locked.
+            - `422` `unprocessable_content`: Request format error or parameter validation failed.
+            - `500` `internal_server_error`: Internal server error.    
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    description: The type of error that occurred.
+                  description:
+                    type: string
+                    description: A detailed description of the error.
+              examples:
+                Error:
+                  value:
+                    error_type: unauthorized
+                    description: Authentication failed. Please check your credentials.
+
+    delete:
+      tags:
+        - Phone Number Management
+      summary: Delete number
+      description: |-
+        Remove an imported phone number from the system.
+        
+        After calling this endpoint, the number stops receiving calls routed through this system. To delete the number from the service provider, remove it in the service provider's console.
+        > This operation only removes the number configuration from the Agora system; the number stored with the phone service provider is not deleted.
+      operationId: delete-number
+      parameters:
+        - name: phone_number
+          in: path
+          description: Telephone number in E.164 format. For example, +11234567890.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Request was successful. The response body is empty.
+        default:
+          description: |- 
+            Request failed. The response body includes the error code and description.
+
+            **Common error codes:**
+            - `401` `unauthorized`: Authentication failed, please check your credentials.
+            - `404` `not_found`: The specified phone number was not found.
+            - `409` `phone_number_exists`: Phone number already exists, duplicate import not allowed.
+            - `409` `conflict`: Concurrent modification conflict or resource locked.
+            - `422` `unprocessable_content`: Request format error or parameter validation failed.
+            - `500` `internal_server_error`: Internal server error.             
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_type:
+                    type: string
+                    description: The type of error that occurred.
+                  description:
+                    type: string
+                    description: A detailed description of the error.
+              examples:
+                Error:
+                  value:
+                    error_type: unauthorized
+                    description: Authentication failed. Please check your credentials.
+
+tags:
+  - name: Agent Management
+    description: Operations for managing conversational AI agents
+  - name: Telephony
+    description: Operations for telephony and outbound calling
+  - name: Phone Number Management
+    description: Operations for managing phone numbers
+
+components:
+  parameters:
+    appid:
+      name: appid
+      in: path
+      description: The App ID of the project.
+      required: true
+      schema:
+        type: string
+
+    agentId:
+      name: agentId
+      in: path
+      description: The agent instance ID you obtained after successfully calling `join` to start a conversational AI agent.
+      required: true
+      schema:
+        type: string
+
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: |-
+        Basic HTTP Authentication is required for all API endpoints.
+        
+        **Authentication Steps:**
+        1. Obtain your App ID and App Certificate from the Agora Console
+        2. Combine them in the format: `AppID:AppCertificate`
+        3. Base64 encode the combined string
+        4. Add the encoded value to the Authorization header as: `Authorization: Basic <base64_encoded_credentials>`
+    AgoraToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |-
+        Token-based authentication scoped to a specific app ID and channel.
+        Pass the full `Authorization` header value in one of the following formats:
+        
+        **Agora token:**
+        ```
+        Authorization: agora token=<RTC+RTM_token>
+        ```
+        
+        **Bearer credentials:**
+        ```
+        Authorization: Bearer base64(<customerID:customerSecret>)
+        ```
+        
+        **Token generation:**
+        - Generate a token on your server using the Agora token builder.
+        - The UID passed to the token builder must match the `agent_rtc_uid` value in the request body.
+        - Both integer UIDs and string UIDs are supported. Use `BuildTokenWithUid` for integer UIDs, or `BuildTokenWithUserAccount` for string UIDs.
+        - Tokens expire after a maximum of 86400 seconds (24 hours). Regenerate and reuse tokens on each request, or implement a token server to issue tokens on demand.
+        - If you enable the Signaling (RTM) service (`advanced_features.enable_rtm: true`), the token must include both RTC and RTM privileges.
+        
+        > Generate tokens server-side. Never expose your App Certificate in client code.
+        
+security:
+  - BasicAuth: []
+  - AgoraToken: []

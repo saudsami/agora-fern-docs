@@ -2,6 +2,13 @@
 
 ## Issues
 
+### Minor issues
+
+- Hide platform label in Tabs: The Single tab label "Platforms" does not add any value. Is it possible to hide it?
+- The auto-generated Next Steps link is broken on multi-platform docs
+
+
+
 ### Multi-platform page support
 
 For some Agora products, such as Video calling and Signaling, we need platform-specific versions for each doc (Android, iOS, Flutter, Web, macOS, Windows, etc.) The available platforms may vary by product and for each doc. In our current Docusaurus implementation this is handled using a `PlatformWrapper` component and a global platform selector dropdown that persists across page navigation.

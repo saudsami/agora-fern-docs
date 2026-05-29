@@ -1,10 +1,41 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/fern-api/fern/main/product-yml.schema.json
+tabs:
+  platforms:
+    display-name: Platforms
+    skip-slug: true
+
 navigation:
-  - section: Get started
-    contents:
-      - page: Quickstart
-        path: ../pages/signaling/quickstart.mdx
-  - section: Migration guides
-    contents:
-      - page: Migrate STT 5.x to 7.x
-        path: ../pages/signaling/stt-5x-to-7x.mdx
+  - tab: platforms
+    variants:
+      - title: Android
+        layout:
+          - section: Get Started
+            contents:
+              - page: Quick Start
+                path: ../pages/signaling/quickstart.mdx
+              - page: Overview
+                path: ../pages/signaling/stt-5x-to-7x.mdx
+      - title: iOS
+        slug: ios
+        layout:
+          - section: Get Started
+            contents:
+              - page: Quick Start
+                path: ../pages/signaling/quickstart.mdx
+              - page: Overview
+                path: ../pages/signaling/stt-5x-to-7x.mdx
+      - title: Web
+        layout:
+          - section: Get Started
+            contents:
+              - page: Quick Start
+                path: ../pages/signaling/quickstart.mdx
+              - page: Overview
+                path: ../pages/signaling/stt-5x-to-7x.mdx
+      - title: Windows
+        layout:
+          - section: Get Started
+            contents:
+              - page: Quick Start
+                path: ../pages/signaling/quickstart.mdx
+              - page: Overview
+                path: ../pages/signaling/stt-5x-to-7x.mdx
