@@ -12,16 +12,16 @@ Make the following changes when migrating a docusaurus doc to fern:
   - remove `Tabs`, `TabItem`, `CodeBlock`
 
 - Replace: 
-  - <Vg k="COMPANY" /> with Agora
-  - <Vg k="CONSOLE" /> with Agora Console
-  - <Vpd k="NAME" /> with the product name. If you are not clear which product this doc is for, ask before updating.
+  - `<Vg k="COMPANY" />` with Agora
+  - `<Vg k="CONSOLE" />` with Agora Console
+  - `<Vpd k="NAME" />` with the product name. If you are not clear which product this doc is for, ask before updating.
 
-- Replace <Admonitions> with <Callout> component
+- Replace `<Admonitions>` with `<Callout>` component
   - for `type="info"` use `intent="note"`
   - for `type="caution"` use `intent="warning"`
   - other `intents` available are `success`, `error`, `launch`, `tip`, `check`; use where appropriate.
 
-- Replace <details><summary>header</summary>Content</details> with 
+- Replace `<details><summary>header</summary>Content</details>` with 
 
   ```xml
   <Accordion title="header">
@@ -30,7 +30,7 @@ Make the following changes when migrating a docusaurus doc to fern:
   ```
 
 - Update `<Tabs>` component
-  - Replace <Tabs groupId="group"><TabItem value="language" label="title">Tab content</TabItem></Tabs>
+  - Replace `<Tabs groupId="group"><TabItem value="language" label="title">Tab content</TabItem></Tabs>`
 
     ```xml
     <Tabs>
