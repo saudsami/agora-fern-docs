@@ -44,7 +44,7 @@ Make the following changes when migrating a docusaurus doc to fern:
 
 - If a `<Tabs>` contains only code blocks and no other content then use the following construct instead of Tabs:
 
-  ```xml
+  ````xml
   <CodeBlocks>
     ```ruby title="hello_world.rb"
     puts "Hello World"
@@ -62,7 +62,7 @@ Make the following changes when migrating a docusaurus doc to fern:
     }
     ```
   </CodeBlocks>
-  ```
+  ````
 
 - Image paths: Modify image paths from ![](/images/path-to/image.png) to  ![](/assets/path-to/image.png)
 
