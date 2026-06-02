@@ -189,16 +189,16 @@ for a Go agent walkthrough that runs as a single process without a frontend.
 
 The backend exposes three endpoints, one for each operation the frontend needs.
 
-<Tabs>
-<Tab title="TypeScript" language="typescript">
-
 ### Generate tokens
 
 Endpoint: <Badge intent="success">POST</Badge> `/api/token`
 
+<Tabs>
+<Tab title="TypeScript" language="typescript">
+
 This endpoint builds an RTC token and an RTM token for the browser client. It is the only place the App Certificate is used.
 
-```ts 
+```ts
 import { NextRequest, NextResponse } from 'next/server';
 import { RtcTokenBuilder, RtcRole, RtmTokenBuilder } from 'agora-token';
 
@@ -225,13 +225,73 @@ export async function POST(req: NextRequest) {
 }
 ```
 
+</Tab>
+<Tab title="Python" language="python">
+
+This endpoint generates an RTC token and an RTM token for the browser client. It is the only place the App Certificate is used.
+
+All backend code lives in `server-python/main.py`.
+
+```python title="server-python/main.py"
+import os
+import time
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from dotenv import load_dotenv
+from agora_token_builder import RtcTokenBuilder, RtmTokenBuilder
+
+load_dotenv()
+
+APP_ID = os.environ["APP_ID"]
+APP_CERTIFICATE = os.environ["APP_CERTIFICATE"]
+TOKEN_TTL_SECONDS = 60 * 60
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["POST"],
+    allow_headers=["*"],
+)
+
+class TokenRequest(BaseModel):
+    channel: str
+    uid: int
+
+@app.post("/api/token")
+def token(body: TokenRequest):
+    expire_at = int(time.time()) + TOKEN_TTL_SECONDS
+    rtc_token = RtcTokenBuilder.buildTokenWithUid(
+        APP_ID, APP_CERTIFICATE, body.channel, body.uid,
+        role=1, privilegeExpiredTs=expire_at,
+    )
+    rtm_token = RtmTokenBuilder.buildToken(
+        APP_ID, APP_CERTIFICATE, str(body.uid), role=1, privilegeExpiredTs=expire_at,
+    )
+    return {"rtcToken": rtc_token, "rtmToken": rtm_token, "expireAt": expire_at}
+```
+
+</Tab>
+<Tab title="Go" language="go">
+
+<Callout intent="note" title="Coming soon">
+The Go backend walkthrough is not yet available. It will mirror the Python path: a standalone backend on port 8000, a Next.js web client on port 3000, and the same three HTTP endpoints. In the meantime, see the [Voice AI quickstart](/conversational-ai/get-started/quickstart) guide to get started with Go.
+</Callout>
+
+</Tab>
+</Tabs>
+
 ### Start an agent session
 
 Endpoint: <Badge intent="success">POST</Badge> `/api/invite-agent`
 
+<Tabs>
+<Tab title="TypeScript" language="typescript">
+
 This endpoint uses the Agent Server SDK to configure an agent and start a session. The STT, LLM, and TTS configurations use Agora-managed presets and therefore do not require an `apiKey`.
 
-```ts 
+```ts
 import { NextRequest, NextResponse } from 'next/server';
 import {
   AgoraClient, Agent, Area, DeepgramSTT, MiniMaxTTS, OpenAI, ExpiresIn,
@@ -282,96 +342,10 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-### Stop an agent session
-
-Endpoint: <Badge intent="success">POST</Badge> `/api/stop-conversation`
-
-This endpoint stops a running agent session by ID.
-
-```ts 
-import { NextRequest, NextResponse } from 'next/server';
-import { AgoraClient, Area } from 'agora-agent-server-sdk';
-
-const client = new AgoraClient({
-  area: Area.US,
-  appId: process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-  appCertificate: process.env.NEXT_AGORA_APP_CERTIFICATE!,
-});
-
-export async function POST(req: NextRequest) {
-  const { agentId } = await req.json();
-  if (!agentId) {
-    return NextResponse.json({ error: 'agentId required' }, { status: 400 });
-  }
-
-  try {
-    await client.agents.leave(agentId);
-    return NextResponse.json({ stopped: true });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `stop failed: ${message}` }, { status: 502 });
-  }
-}
-```
-
 </Tab>
 <Tab title="Python" language="python">
 
-All backend code lives in `server-python/main.py`.
-
-### Generate tokens
-
-Endpoint: <Badge intent="success">POST</Badge> `/api/token`
-
-This endpoint generates an RTC token and an RTM token for the browser client. It is the only place the App Certificate is used.
-
-```python title="server-python/main.py"
-import os
-import time
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from dotenv import load_dotenv
-from agora_token_builder import RtcTokenBuilder, RtmTokenBuilder
-
-load_dotenv()
-
-APP_ID = os.environ["APP_ID"]
-APP_CERTIFICATE = os.environ["APP_CERTIFICATE"]
-TOKEN_TTL_SECONDS = 60 * 60
-
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_methods=["POST"],
-    allow_headers=["*"],
-)
-
-class TokenRequest(BaseModel):
-    channel: str
-    uid: int
-
-@app.post("/api/token")
-def token(body: TokenRequest):
-    expire_at = int(time.time()) + TOKEN_TTL_SECONDS
-    rtc_token = RtcTokenBuilder.buildTokenWithUid(
-        APP_ID, APP_CERTIFICATE, body.channel, body.uid,
-        role=1, privilegeExpiredTs=expire_at,
-    )
-    rtm_token = RtmTokenBuilder.buildToken(
-        APP_ID, APP_CERTIFICATE, str(body.uid), role=1, privilegeExpiredTs=expire_at,
-    )
-    return {"rtcToken": rtc_token, "rtmToken": rtm_token, "expireAt": expire_at}
-```
-
-### Start an agent session
-
-Endpoint: <Badge intent="success">POST</Badge> `/api/invite-agent`
-
-This endpoint uses the Agent Server SDK to configure an agent and start a session in the
-caller's channel. The STT, LLM, and TTS configurations use Agora-managed presets and
-therefore do not require an `api_key`.
+This endpoint uses the Agent Server SDK to configure an agent and start a session in the caller's channel. The STT, LLM, and TTS configurations use Agora-managed presets and therefore do not require an `api_key`.
 
 Add the following to `main.py`:
 
@@ -423,9 +397,53 @@ def invite_agent(body: InviteRequest):
         raise HTTPException(status_code=502, detail=f"start failed: {exc}")
 ```
 
+</Tab>
+<Tab title="Go" language="go">
+
+<Callout intent="note" title="Coming soon">
+The Go backend walkthrough is not yet available. It will mirror the Python path: a standalone backend on port 8000, a Next.js web client on port 3000, and the same three HTTP endpoints. In the meantime, see the [Voice AI quickstart](/conversational-ai/get-started/quickstart) guide to get started with Go.
+</Callout>
+
+</Tab>
+</Tabs>
+
 ### Stop an agent session
 
 Endpoint: <Badge intent="success">POST</Badge> `/api/stop-conversation`
+
+<Tabs>
+<Tab title="TypeScript" language="typescript">
+
+This endpoint stops a running agent session by ID.
+
+```ts
+import { NextRequest, NextResponse } from 'next/server';
+import { AgoraClient, Area } from 'agora-agent-server-sdk';
+
+const client = new AgoraClient({
+  area: Area.US,
+  appId: process.env.NEXT_PUBLIC_AGORA_APP_ID!,
+  appCertificate: process.env.NEXT_AGORA_APP_CERTIFICATE!,
+});
+
+export async function POST(req: NextRequest) {
+  const { agentId } = await req.json();
+  if (!agentId) {
+    return NextResponse.json({ error: 'agentId required' }, { status: 400 });
+  }
+
+  try {
+    await client.agents.leave(agentId);
+    return NextResponse.json({ stopped: true });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: `stop failed: ${message}` }, { status: 502 });
+  }
+}
+```
+
+</Tab>
+<Tab title="Python" language="python">
 
 This endpoint stops a running agent session by ID.
 

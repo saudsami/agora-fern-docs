@@ -1,0 +1,58 @@
+---
+title: Microsoft Azure
+position: 3
+description: >
+  Integrate Microsoft Azure ASR into Conversational AI Engine.
+max-toc-depth: 3
+---
+
+Microsoft Azure provides enterprise-grade automatic speech recognition with support for multiple languages and robust noise handling capabilities, optimized for real-time conversational applications.
+
+### Sample configuration
+
+The following example shows a starting `asr` parameter configuration you can use when you [Start a conversational AI agent](/conversational-ai/rest-api/agent/join).
+
+```json title="asr configuration"
+"asr": {
+  "vendor": "microsoft",
+  "params": {
+    "key": "<microsoft_key>",
+    "region": "eastus",
+    "language": "en-US",
+    "phrase_list": ["agora", "conversational", "ai", "engine"]
+  }
+}
+```
+
+<Callout intent="warning">
+The parameters listed on this page are validated for use with Conversational AI Engine. Required parameters must be provided as documented. Any additional parameters are passed through directly to the underlying vendor without validation. For a full list of supported options, refer to the [Microsoft Azure Speech-to-Text documentation](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/speech-to-text).
+</Callout>
+
+### Key parameters
+
+<ParamField path="asr" type="object" required={true}>
+</ParamField>
+<Indent>
+<ParamField path="vendor" type="string" required={true}>
+  Set to `microsoft`.
+</ParamField>
+<ParamField path="params" type="object" required={true}>
+</ParamField>
+<Indent>
+<ParamField path="key" type="string" required={true}>
+  The API key used for authentication. Get your API key from the [Azure Portal](https://portal.azure.com/).
+</ParamField>
+
+<ParamField path="region" type="string" required={true}>
+  The Azure region where the speech service is hosted (for example, `eastus`, `westus2`).
+</ParamField>
+
+<ParamField path="language" type="string" required={true}>
+  The language code for speech recognition (for example, `en-US`, `es-ES`, `fr-FR`). See [supported languages](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=stt) for language codes.
+</ParamField>
+
+<ParamField path="phrase_list" type="array[string]">
+  A list of words or phrases provided in advance to improve recognition accuracy.
+</ParamField>
+</Indent>
+</Indent>

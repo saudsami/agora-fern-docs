@@ -22,15 +22,15 @@ products:
     path: ./products/conversational-ai.yml
     icon: microphone
   - display-name: Video Calling
-    slug: video-calling
+    path: ./products/video-calling/versions/4.x/4.x.yml  # default to latest
     icon: video
-    path: ./products/video-calling-android.yml
+    slug: video-calling  # optional
+    subtitle: Realtime communication  # optional
     versions:
-      - display-name: Android
-        path: ./products/video-calling-android.yml
-        slug: android
-      - display-name: Flutter
-        path: ./products/video-calling-flutter.yml
+      - display-name: 4.x
+        path: ./products/video-calling/versions/4.x/4.x.yml
+      - display-name: 3.x
+        path: ./products/video-calling/versions/3.x/3.x.yml
   - display-name: Signaling
     slug: signaling
     path: ./products/signaling.yml

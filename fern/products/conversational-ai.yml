@@ -4,24 +4,77 @@ navigation:
     collapsed: true
     contents:
       - page: Product overview
-        path: ../pages/conversational-ai/product-overview.mdx
+        path: ../pages/conversational-ai/overview/product-overview.mdx
       - page: Release notes 
-        path: ../pages/conversational-ai/release-notes.mdx
+        path: ../pages/conversational-ai/overview/release-notes.mdx
       - page: Pricing
-        path: ../pages/conversational-ai/pricing.mdx
+        path: ../pages/conversational-ai/overview/pricing.mdx
   - section: Get started
     collapsed: true
     contents:
       - page: Voice AI quickstart
-        path: ../pages/conversational-ai/quickstart.mdx
+        path: ../pages/conversational-ai/get-started/quickstart.mdx
         slug: quickstart
   - section: Develop
     collapsed: true 
     contents:
       - page: Start and stop an agent
-        path: ../pages/conversational-ai/start-stop-agent.mdx
+        path: ../pages/conversational-ai/develop/start-stop-agent.mdx
       - page: Build a backend and client from scratch
-        path: ../pages/conversational-ai/build-server-client.mdx  
+        path: ../pages/conversational-ai/develop/build-server-client.mdx  
+  - section: Models
+    collapsed: true
+    contents:
+      - section: ASR
+        collapsed: true
+        contents:
+          - page: Overview
+            path: ../pages/conversational-ai/models/asr/overview.mdx
+          - page: ARES
+            path: ../pages/conversational-ai/models/asr/ares.mdx
+          - page: Microsoft Azure
+            path: ../pages/conversational-ai/models/asr/microsoft.mdx
+          - page: Deepgram
+            path: ../pages/conversational-ai/models/asr/deepgram.mdx
+      - section: LLM
+        collapsed: true
+        contents:
+          - page: Overview
+            path: ../pages/conversational-ai/models/llm/overview.mdx
+      - section: TTS
+        collapsed: true
+        contents:
+          - page: Overview
+            path: ../pages/conversational-ai/models/tts/overview.mdx
+      - section: MLLM
+        collapsed: true
+        contents:
+          - page: Overview
+            path: ../pages/conversational-ai/models/mllm/overview.mdx
+      - section: AI Avatar
+        collapsed: true
+        contents:
+          - page: Overview
+            path: ../pages/conversational-ai/models/avatar/overview.mdx                                                
+  - section: Best practices
+    collapsed: true
+    contents:
+      - page: Optimize audio
+        path: ../pages/conversational-ai/best-practices/optimize-audio.mdx
+        slug: audio-setup
+  - section: Agent Studio
+    collapsed: true
+    contents:
+      - page: Studio overview
+        path: ../pages/conversational-ai/studio/overview.mdx
+        slug: overview
+  - section: Reference
+    collapsed: true
+    contents:
+      - page: Enable conversational AI
+        path: ../pages/conversational-ai/reference/enable-conversational-ai.mdx
+        slug: enable-conversational-ai                
+
   - api: RESTful API
     slug: rest-api
     api-name: conversational-ai

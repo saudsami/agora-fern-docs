@@ -1,0 +1,33 @@
+tabs:
+  platforms:          # ✅ Tab is declared here
+    display-name: Platforms
+    icon: puzzle
+
+navigation:
+  - tab: platforms
+    variants:
+      - title: Android
+        layout:
+          - section: Get Started
+            contents:
+              - page: Quick Start
+                path: ../../../../pages/video-calling/quickstart.mdx
+      - title: iOS
+        slug: ios
+        layout:
+          - section: Get Started
+            contents:
+              - page: Quick Start
+                path: ../../../../pages/video-calling/quickstart.mdx
+      - title: Web
+        layout:
+          - section: Get Started
+            contents:
+              - page: Quick Start
+                path: ../../../../pages/video-calling/quickstart.mdx
+      - title: Windows
+        layout:
+          - section: Get Started
+            contents:
+              - page: Quick Start
+                path: ../../../../pages/video-calling/quickstart.mdx

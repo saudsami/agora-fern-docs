@@ -1,4 +1,4 @@
-Keep the content as is as far as possible.
+Keep the content unchanged, as far as possible.
 Make the following changes when migrating a docusaurus doc to fern:
 
 - Frontmatter
@@ -10,11 +10,13 @@ Make the following changes when migrating a docusaurus doc to fern:
 
 - imports
   - remove `Tabs`, `TabItem`, `CodeBlock`
+  - remove any other unused or incompatible imports and inform me in the conversion notes
 
 - Replace: 
   - `<Vg k="COMPANY" />` with Agora
   - `<Vg k="CONSOLE" />` with Agora Console
   - `<Vpd k="NAME" />` with the product name. If you are not clear which product this doc is for, ask before updating.
+  - If there are any other unresolved `<Vg>` `<Vpd>` or `<Vpl>` values, inform me in the notes
 
 - Replace `<Admonitions>` with `<Callout>` component
   - for `type="info"` use `intent="note"`
@@ -64,10 +66,10 @@ Make the following changes when migrating a docusaurus doc to fern:
   </CodeBlocks>
   ```
 
-- Image paths: Modify image paths from ![](/images/path-to/image.png) to  ![](/assets/path-to/image.png)
+- Image paths: Modify image paths from ![](/images/path-to/image.png) to  ![](/assets/path-to/image.png). Inform the image paths that I need to copy in the migration notes.
 
 
-- Codeblock titles: When migrating simple codeblocks, add a suitable title where it adds value. This is nice to have, not a strict requirement.
+- Codeblock titles: When migrating simple codeblocks, add a suitable title where it adds value. Do not make any assumptions to create a title. Use something appropriate from the context. This is nice to have, not a strict requirement. Skip when in doubt.
 
   ```json title="200 OK"
   {
@@ -76,3 +78,4 @@ Make the following changes when migrating a docusaurus doc to fern:
     "status": "RUNNING"
   }
   ```
+

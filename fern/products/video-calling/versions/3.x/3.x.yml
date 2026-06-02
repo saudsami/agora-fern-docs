@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fern-api/fern/main/product-yml.schema.json
+navigation:
+  - section: Get started
+    contents:
+      - page: Quickstart
+        path: ../../../../pages/video-calling/quickstart.mdx
+
