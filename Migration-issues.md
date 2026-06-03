@@ -6,8 +6,6 @@
 
 - Hide platform label in Tabs: The Single tab label "Platforms" does not add any value. Is it possible to hide it?
 - The auto-generated Next Steps link is broken on multi-platform docs
-- Heirarchy in `<ParamField>` component
-
 
 ### Multi-platform page support
 

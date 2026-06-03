@@ -8,34 +8,42 @@ navigation:
     variants:
       - title: Android
         layout:
+          - section: Overview
+            contents:                
+              - page: Migration guide
+                path: ../pages/signaling/overview/stt-5x-to-7x.mdx
           - section: Get Started
             contents:
               - page: Quick Start
-                path: ../pages/signaling/quickstart.mdx
-              - page: Overview
-                path: ../pages/signaling/stt-5x-to-7x.mdx
+                path: ../pages/signaling/get-started/quickstart.mdx
       - title: iOS
         slug: ios
         layout:
+          - section: Overview
+            contents:                
+              - page: Migration guide
+                path: ../pages/signaling/overview/stt-5x-to-7x.mdx
           - section: Get Started
             contents:
               - page: Quick Start
-                path: ../pages/signaling/quickstart.mdx
-              - page: Overview
-                path: ../pages/signaling/stt-5x-to-7x.mdx
+                path: ../pages/signaling/get-started/quickstart.mdx
       - title: Web
         layout:
+          - section: Overview
+            contents:                
+              - page: Migration guide
+                path: ../pages/signaling/overview/stt-5x-to-7x.mdx
           - section: Get Started
             contents:
               - page: Quick Start
-                path: ../pages/signaling/quickstart.mdx
-              - page: Overview
-                path: ../pages/signaling/stt-5x-to-7x.mdx
+                path: ../pages/signaling/get-started/quickstart.mdx
       - title: Windows
         layout:
+          - section: Overview
+            contents:                
+              - page: Migration guide
+                path: ../pages/signaling/overview/stt-5x-to-7x.mdx
           - section: Get Started
             contents:
               - page: Quick Start
-                path: ../pages/signaling/quickstart.mdx
-              - page: Overview
-                path: ../pages/signaling/stt-5x-to-7x.mdx
+                path: ../pages/signaling/get-started/quickstart.mdx
